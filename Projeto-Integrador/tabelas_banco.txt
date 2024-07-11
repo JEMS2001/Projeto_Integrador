@@ -1,0 +1,49 @@
+CREATE TABLE empresa (
+    id_empresa INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    cnpj VARCHAR(20),
+    endereco VARCHAR(255),
+    email VARCHAR(100),
+    senha VARCHAR(100)
+);
+
+CREATE TABLE membro (
+    id_membro INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    data_nascimento DATE,
+    telefone VARCHAR(20),
+    cpf VARCHAR(14),
+    email VARCHAR(100),
+    senha VARCHAR(100),
+    id_empresa INT,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+CREATE TABLE projeto (
+    id_projeto INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    tipo VARCHAR(50),
+    data_inicio DATE,
+    data_fim DATE,
+    id_empresa INT,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+CREATE TABLE membro_projeto (
+    id_membro INT,
+    id_projeto INT,
+    PRIMARY KEY (id_membro, id_projeto),
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro),
+    FOREIGN KEY (id_projeto) REFERENCES projeto(id_projeto)
+);
+
+CREATE TABLE tarefa (
+    id_tarefa INT AUTO_INCREMENT primary key,
+    nome varchar(100),
+    descricao varchar(100),
+    status varchar(100),
+    id_membro INT,
+    id_projeto INT,
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro),
+    FOREIGN KEY (id_projeto) REFERENCES projeto(id_projeto)
+);

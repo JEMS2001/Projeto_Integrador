@@ -1,0 +1,41 @@
+
+        .content {
+            flex: 1; /* faz o conteúdo ocupar todo o espaço disponível */
+            padding: 20px; /* espaçamento interno */
+        }
+        header {
+            background-color: #000;
+            color: #fff;
+        }
+       
+        .login {
+            padding: 20px;
+            margin: auto; /* centraliza o formulário na página */
+            max-width: 400px; /* largura máxima do formulário */
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+    
+        .container {
+            flex: 1; /* faz o conteúdo ocupar todo o espaço vertical disponível */
+        }
+    
+        .login {
+            padding: 20px;
+            margin: auto; /* centraliza o formulário na página */
+            max-width: 400px; /* largura máxima do formulário */
+        }
+    
+        footer {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+        }
