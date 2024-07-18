@@ -20,22 +20,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = $_POST['email'];
         $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT); // Use password hashing
 
-        $sql = "INSERT INTO membro(nome, data_nascimento, telefone, cpf, email, senha) VALUES (:nome, :data_nascimento, :telefone, :cpf, :email, :senha)";
+        // Verificar se o CPF já existe no banco de dados
+        $sql = "SELECT COUNT(*) FROM membro WHERE cpf = :cpf";
         $stmt = $pdo->prepare($sql);
-
-        $stmt->bindParam(':nome', $nome);
-        $stmt->bindParam(':data_nascimento', $data_nascimento);
-        $stmt->bindParam(':telefone', $telefone);
         $stmt->bindParam(':cpf', $cpf);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':senha', $senha);
+        $stmt->execute();
+        $cpfCount = $stmt->fetchColumn();
 
-        if ($stmt->execute()) {
-            $mensagem = "Membro cadastrado com sucesso.";
-            header("Location: home.php");
-            exit();
+        if ($cpfCount > 0) {
+            $mensagem = "CPF já cadastrado. Por favor, use outro CPF.";
         } else {
-            $mensagem = "Erro ao cadastrar membro: " . $stmt->errorInfo()[2];
+            $sql = "INSERT INTO membro(nome, data_nascimento, telefone, cpf, email, senha) VALUES (:nome, :data_nascimento, :telefone, :cpf, :email, :senha)";
+            $stmt = $pdo->prepare($sql);
+
+            $stmt->bindParam(':nome', $nome);
+            $stmt->bindParam(':data_nascimento', $data_nascimento);
+            $stmt->bindParam(':telefone', $telefone);
+            $stmt->bindParam(':cpf', $cpf);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':senha', $senha);
+
+            if ($stmt->execute()) {
+                $mensagem = "Membro cadastrado com sucesso.";
+                header("Location: home.php");
+                exit();
+            } else {
+                $mensagem = "Erro ao cadastrar membro: " . $stmt->errorInfo()[2];
+            }
         }
     } else {
         $mensagem = "Todos os campos do formulário devem ser preenchidos.";
@@ -72,6 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     max-width: 100%;
     height: auto;
 }
+
 .registration-form h1 {
     margin-bottom: 20px;
     opacity: 0;
@@ -161,7 +173,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="registration-form">
             <h1 class="text-center mb-4">Cadastro de Membro</h1>
             <?php if (!empty($mensagem)): ?>
-                <div class="alert <?php echo ($stmt && $stmt->execute()) ? 'alert-success' : 'alert-danger'; ?>" role="alert">
+                <div class="alert alert-danger" role="alert">
                     <?php echo $mensagem; ?>
                 </div>
             <?php endif; ?>
@@ -200,7 +212,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <div class="login-background">
             <div class="hero-img mt-5" data-aos="zoom-in" data-aos-delay="200">
-                <img src="img\hero\5024147.jpg" class="img-fluid" alt="Dashboard">
+                <img src="img/hero/5024147.jpg" class="img-fluid" alt="Dashboard">
             </div>
         </div>
     </div>
