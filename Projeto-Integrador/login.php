@@ -68,7 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     justify-content: center;
 }
 
-
 .login-form h1 {
     margin-bottom: 20px;
     opacity: 0;
@@ -129,6 +128,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" class="btn btn-success btn-lg w-100">Login</button>
             </form>
+            <!-- Botão "Esqueci a minha senha" -->
+            <div class="text-center mt-3">
+                <a href="forgot_password.php" class="btn btn-link">Esqueci a minha senha</a>
+            </div>
         </div>
         <div class="login-background">
             <div class="hero-img mt-5" data-aos="zoom-in" data-aos-delay="200">
