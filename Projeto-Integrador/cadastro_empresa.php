@@ -18,21 +18,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = $_POST['email'];
         $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
 
-        $sql = "INSERT INTO empresa(nome, cnpj, endereco, email, senha) VALUES (:nome, :cnpj, :endereco, :email, :senha)";
+        // Verificar se o CNPJ já existe no banco de dados
+        $sql = "SELECT COUNT(*) FROM empresa WHERE cnpj = :cnpj";
         $stmt = $pdo->prepare($sql);
-
-        $stmt->bindParam(':nome', $nome);
         $stmt->bindParam(':cnpj', $cnpj);
-        $stmt->bindParam(':endereco', $endereco);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':senha', $senha);
+        $stmt->execute();
+        $cnpjCount = $stmt->fetchColumn();
 
-        if ($stmt->execute()) {
-            $_SESSION['mensagem'] = "Cadastro realizado com sucesso.";
-            header("Location: home.php");
-            exit();
+        if ($cnpjCount > 0) {
+            $mensagem = "CNPJ já cadastrado. Por favor, use outro CNPJ.";
         } else {
-            $mensagem = "Erro ao inserir o registro: " . $stmt->errorInfo()[2];
+            $sql = "INSERT INTO empresa(nome, cnpj, endereco, email, senha) VALUES (:nome, :cnpj, :endereco, :email, :senha)";
+            $stmt = $pdo->prepare($sql);
+
+            $stmt->bindParam(':nome', $nome);
+            $stmt->bindParam(':cnpj', $cnpj);
+            $stmt->bindParam(':endereco', $endereco);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':senha', $senha);
+
+            if ($stmt->execute()) {
+                $_SESSION['mensagem'] = "Cadastro realizado com sucesso.";
+                header("Location: home.php");
+                exit();
+            } else {
+                $mensagem = "Erro ao inserir o registro: " . $stmt->errorInfo()[2];
+            }
         }
     } else {
         $mensagem = "Todos os campos do formulário devem ser preenchidos.";
