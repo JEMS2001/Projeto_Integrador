@@ -4,10 +4,6 @@ include_once('config.php');
 
 $mensagem = '';
 
-if (!isset($_GET['id'])) {
-    header("Location: home.php");
-    exit;
-}
 
 $id_membro = $_GET['id'];
 
@@ -17,10 +13,6 @@ $stmt->bindParam(':id_membro', $id_membro);
 $stmt->execute();
 $membro = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$membro) {
-    header("Location: home.php");
-    exit;
-}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['nome'], $_POST['data_nascimento'], $_POST['telefone'], $_POST['cpf'], $_POST['email'], $_POST['senha'])) {

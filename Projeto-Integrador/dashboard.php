@@ -1,12 +1,6 @@
 <?php
 session_start();
 
-if((!isset($_SESSION['email']) == true) and (!isset($_SESSION['senha']) == true)) {
-    unset($_SESSION['email']);
-    unset($_SESSION['senha']);
-    header('Location: login.php');
-    exit;
-}
 $logado = $_SESSION['email'];
 $tabela = $_SESSION['tipo_usuario'];
 
@@ -24,14 +18,22 @@ try {
     die("Conexão falhou: " . $e->getMessage());
 }
 
-// Consulta para obter dados específicos de uma empresa
-$empresa_id = $_SESSION['id_empresa'] ;// ID da empresa específica
-$empresa = $pdo->query("SELECT * FROM empresa WHERE id_empresa = $empresa_id")->fetch(PDO::FETCH_ASSOC);
-$membros = $pdo->query("SELECT * FROM membro WHERE id_empresa = $empresa_id")->fetchAll(PDO::FETCH_ASSOC);
-$projetos = $pdo->query("SELECT * FROM projeto WHERE id_empresa = $empresa_id")->fetchAll(PDO::FETCH_ASSOC);
-$tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_projeto FROM projeto WHERE id_empresa = $empresa_id)")->fetchAll(PDO::FETCH_ASSOC);
-?>
+// Verifica se id_empresa está definido
+if (isset($_SESSION['id_empresa'])) {
+    $empresa_id = $_SESSION['id_empresa'];
 
+    // Consulta para obter dados específicos de uma empresa
+    $empresa = $pdo->query("SELECT * FROM empresa WHERE id_empresa = $empresa_id")->fetch(PDO::FETCH_ASSOC);
+    $membros = $pdo->query("SELECT * FROM membro WHERE id_empresa = $empresa_id")->fetchAll(PDO::FETCH_ASSOC);
+    $projetos = $pdo->query("SELECT * FROM projeto WHERE id_empresa = $empresa_id")->fetchAll(PDO::FETCH_ASSOC);
+    $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_projeto FROM projeto WHERE id_empresa = $empresa_id)")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $empresa = null;
+    $membros = [];
+    $projetos = [];
+    $tarefas = [];
+}
+?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -46,7 +48,6 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <title>Dashboard</title>
     <style>
-
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -165,7 +166,7 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
             <i class="fas fa-users me-1"></i>Membros
         </a>
         <?php } ?>
-        <a href="#">
+        <a href="monitoramento.php">
             <i class="fas fa-chart-bar me-1"></i>Relatórios
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">
@@ -176,8 +177,9 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
     <div class="content">
         <div class="container-fluid">
             <div class="row">
+                <?php if ($empresa): ?>
                 <div class="col-md-3 col-sm-6">
-                    <div class="card animate__animated animate__bounceInLeft">
+                    <div class="card animate_animated animate_bounceInLeft">
                         <div class="card-body">
                             <h5 class="card-title"><i class="fas fa-building"></i> Empresa</h5>
                             <p class="card-text display-4"><?php echo $empresa['nome']; ?></p>
@@ -185,8 +187,9 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
                 <div class="col-md-3 col-sm-6">
-                    <div class="card animate__animated animate__bounceInRight">
+                    <div class="card animate_animated animate_bounceInRight">
                         <div class="card-body">
                             <h5 class="card-title"><i class="fas fa-users"></i> Membros</h5>
                             <p class="card-text display-4"><?php echo count($membros); ?></p>
@@ -195,7 +198,7 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
-                    <div class="card animate__animated animate__bounceInLeft">
+                    <div class="card animate_animated animate_bounceInLeft">
                         <div class="card-body">
                             <h5 class="card-title"><i class="fas fa-project-diagram"></i> Projetos</h5>
                             <p class="card-text display-4"><?php echo count($projetos); ?></p>
@@ -204,7 +207,7 @@ $tarefas = $pdo->query("SELECT * FROM tarefa WHERE id_projeto IN (SELECT id_proj
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
-                    <div class="card animate__animated animate__bounceInRight">
+                    <div class="card animate_animated animate_bounceInRight">
                         <div class="card-body">
                             <h5 class="card-title"><i class="fas fa-tasks"></i> Tarefas</h5>
                             <p class="card-text display-4"><?php echo count($tarefas); ?></p>

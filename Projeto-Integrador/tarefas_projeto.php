@@ -2,7 +2,7 @@
 session_start();
 include_once('config.php');
 
-if(!isset($_SESSION['email']) || empty($_SESSION['email'])) {
+if (!isset($_SESSION['email']) || empty($_SESSION['email'])) {
     header('Location: login.php');
     exit;
 }
@@ -21,6 +21,16 @@ try {
 
     $id_projeto = $_GET['id_projeto'];
 
+    if ($tipo_usuario == 'empresa' && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_member_to_project'])) {
+        $stmt = $pdo->prepare("INSERT INTO membro_projeto (id_membro, id_projeto) VALUES (:id_membro, :id_projeto)");
+        $stmt->execute([
+            ':id_membro' => $_POST['id_membro'],
+            ':id_projeto' => $_POST['id_projeto']
+        ]);
+        header("Location: projeto.php?id_projeto=$id_projeto");
+        exit;
+    }
+    
     // Verificar se o usuário tem acesso ao projeto
     if ($tipo_usuario == 'empresa') {
         $stmt = $pdo->prepare("SELECT * FROM projeto WHERE id_projeto = :id_projeto AND id_empresa = (SELECT id_empresa FROM empresa WHERE email = :email)");
@@ -57,6 +67,9 @@ try {
     }
     $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+   
+   
+    
     // Buscar membros da empresa (apenas para empresas)
     $membros = [];
     if ($tipo_usuario == 'empresa') {
@@ -79,10 +92,32 @@ try {
         exit;
     }
 
+    // Adicionar membro ao projeto (apenas para empresas)
+  
+
+    // Buscar id_empresa
+    $stmt = $pdo->prepare("SELECT id_empresa FROM empresa WHERE email = :email");
+    $stmt->execute([':email' => $logado]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $id_empresa = $result['id_empresa'];
+
+    // Buscar todos os projetos da empresa
+    $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim FROM projeto WHERE id_empresa = :id_empresa");
+    $stmt->execute([':id_empresa' => $id_empresa]);
+    $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Buscar todos os membros da empresa
+    $stmt = $pdo->prepare("SELECT id_membro, nome FROM membro WHERE id_empresa = :id_empresa");
+    $stmt->execute([':id_empresa' => $id_empresa]);
+    $membros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch(Exception $e) {
     die("Erro: " . $e->getMessage());
 }
+
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -210,7 +245,53 @@ try {
     <button type="button" class="btn btn-custom btn-add-task" data-toggle="modal" data-target="#addTaskModal">
         <i class="fas fa-plus"></i> Adicionar Tarefa
     </button>
-    <?php endif; ?>
+
+
+     <!-- Botão para abrir o modal de adicionar membro ao projeto -->
+     <button class="btn btn-primary mb-4" data-toggle="modal" data-target="#addMemberModal"><i class="fas fa-user-plus"></i> Adicionar Membro ao Projeto</button>
+
+
+<!-- Modal para adicionar membro ao projeto -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" role="dialog" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMemberModalLabel">Adicionar Membro ao Projeto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="tarefas_projeto.php?id_projeto=<?php echo $id_projeto; ?>">
+                    <div class="form-group">
+                        <label for="id_projeto">Projeto</label>
+                        <select class="form-control" id="id_projeto" name="id_projeto" required disabled>
+                            <option value="<?php echo $projeto['id_projeto']; ?>"><?php echo htmlspecialchars($projeto['nome']); ?></option>
+                        </select>
+                        <input type="hidden" name="id_projeto" value="<?php echo $projeto['id_projeto']; ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_membro">Membro</label>
+                        <select class="form-control" id="id_membro" name="id_membro" required>
+                            <?php foreach ($membros as $membro) { ?>
+                                <option value="<?php echo $membro['id_membro']; ?>"><?php echo htmlspecialchars($membro['nome']); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="add_member_to_project" class="btn btn-primary btn-block">Adicionar Membro ao Projeto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <?php 
+
+
+endif; ?>
 
     <h3 class="mt-5">Quadro Kanban</h3>
     <div class="kanban-board mt-5">
@@ -230,7 +311,8 @@ try {
                         <p><small>Responsável: <?php echo htmlspecialchars($tarefa['membro_nome']); ?></small></p>
                         
                         <button class="btn btn-sm btn-info edit-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#editTaskModal">Editar</button>
-                        
+                        <button class="btn btn-sm btn-danger delete-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#deleteTaskModal">Deletar</button>
+
                     </div>
                 <?php
                     endif;
@@ -284,7 +366,6 @@ try {
     </div>
 </div>
 
-
 <!-- Edit Task Modal -->
 <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -296,8 +377,9 @@ try {
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Edit task form will go here -->
-                <form id="editTaskForm">
+                <form id="editTaskForm" method="POST" action="edit_task.php">
+                    <input type="hidden" id="editTaskId" value="<?= $tarefa['id_tarefa'] ?>" name="id_tarefa">
+                    <input type="hidden" name="id_projeto" value="<?php echo $projeto['id_projeto']; ?>">
                     <div class="form-group">
                         <label for="editTaskName">Nome da Tarefa</label>
                         <input type="text" class="form-control" id="editTaskName" name="nome_tarefa" required>
@@ -322,12 +404,36 @@ try {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-custom">Salvar Alterações</button>
+                    <button type="submit" name="edit_task" class="btn btn-custom">Salvar Alterações</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+
+<!-- Delete Task Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" role="dialog" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteTaskModalLabel">Excluir Tarefa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteTaskForm" method="POST" action="delete_task.php">
+                    <input type="hidden" id="deleteTaskId" name="id_tarefa">
+                    <p>Tem certeza de que deseja excluir esta tarefa?</p>
+                    <button type="submit" name="delete_task" class="btn btn-danger">Excluir</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -353,9 +459,47 @@ $(function() {
 
     $(".edit-task").click(function() {
         var taskId = $(this).data('id');
-        // Implementar lógica de edição aqui
-        console.log('Editar tarefa: ' + taskId);
+        $.ajax({
+            url: 'get_task.php',
+            method: 'POST',
+            data: { id_tarefa: taskId },
+            success: function(response) {
+                var task = JSON.parse(response);
+                $("#editTaskId").val(task.id_tarefa);
+                $("#editTaskName").val(task.nome);
+                $("#editTaskDescription").val(task.descricao);
+                $("#editTaskStatus").val(task.status);
+                $("#editTaskMember").val(task.id_membro);
+                $("#editTaskModal").modal('show');
+            }
+        });
     });
+
+    $(document).ready(function() {
+    $(".delete-task").click(function() {
+        var taskId = $(this).data('id');
+        $('#deleteTaskId').val(taskId);
+    });
+
+    $("#deleteTaskForm").submit(function(event) {
+        event.preventDefault();
+        $.ajax({
+            url: 'delete_task.php',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.startsWith('error:')) {
+                    alert(response.replace('error: ', ''));
+                } else if (response === 'success') {
+                    
+                    alert('Tarefa excluída com sucesso!');
+                    location.reload();
+                }
+            }
+        });
+    });
+});
+
 });
 </script>
 

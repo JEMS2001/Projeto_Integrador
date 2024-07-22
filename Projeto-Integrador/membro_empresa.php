@@ -204,10 +204,12 @@ try {
                         <ul class="list-group member-list">
                             <?php foreach ($members as $member): ?>
                                 <li class="list-group-item">
-                                    <i class="fas fa-user me-2"></i>
+                                    <img src=<?= $member['imagem'] ?> alt="Foto membro">
                                     <?php echo htmlspecialchars($member['nome']); ?> (<?php echo htmlspecialchars($member['cpf']); ?>)
                                 </li>
-                            <?php endforeach; ?>
+                            <?php
+                        
+                         endforeach; ?>
                         </ul>
                     </div>
                 </div>

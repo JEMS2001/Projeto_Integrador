@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+
 if (isset($_SESSION['email'])) {
     header("Location: dashboard.php");
     exit;
@@ -8,7 +9,7 @@ if (isset($_SESSION['email'])) {
 ?>
 
 <?php
-include_once('config.php');
+include('config.php');
 $mensagem = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

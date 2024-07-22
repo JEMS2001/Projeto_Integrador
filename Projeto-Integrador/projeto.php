@@ -2,7 +2,7 @@
 session_start();
 include_once('config.php');
 
-if(!isset($_SESSION['email']) || empty($_SESSION['email'])) {
+if (!isset($_SESSION['email']) || empty($_SESSION['email'])) {
     header('Location: login.php');
     exit;
 }
@@ -44,25 +44,6 @@ try {
                 ':id_empresa' => $id_empresa
             ]);
         }
-
-        // Adicionar membro ao projeto (apenas para empresas)
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_member_to_project'])) {
-            $stmt = $pdo->prepare("INSERT INTO membro_projeto (id_membro, id_projeto) VALUES (:id_membro, :id_projeto)");
-            $stmt->execute([
-                ':id_membro' => $_POST['id_membro'],
-                ':id_projeto' => $_POST['id_projeto']
-            ]);
-        }
-
-        // Buscar todos os projetos da empresa
-        $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim FROM projeto WHERE id_empresa = :id_empresa");
-        $stmt->execute([':id_empresa' => $id_empresa]);
-        $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Buscar todos os membros da empresa
-        $stmt = $pdo->prepare("SELECT id_membro, nome FROM membro WHERE id_empresa = :id_empresa");
-        $stmt->execute([':id_empresa' => $id_empresa]);
-        $membros = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
         // Buscar id_membro
         $stmt = $pdo->prepare("SELECT id_membro FROM membro WHERE email = :email");
@@ -80,14 +61,14 @@ try {
         $stmt->execute([':id_membro' => $id_membro]);
         $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     die("Erro na conexão: " . $e->getMessage());
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,6 +88,7 @@ try {
             height: 100%;
             padding-top: 60px;
         }
+
         .sidebar a {
             color: var(--text-color);
             text-decoration: none;
@@ -114,33 +96,44 @@ try {
             display: block;
             transition: 0.3s;
         }
+
         .sidebar a:hover {
             background: var(--secondary-color);
         }
+
         .content {
             margin-left: 250px;
             padding: 20px;
             flex: 1;
         }
+
         .card {
             margin-bottom: 20px;
             border-radius: 15px;
             transition: transform 0.2s;
         }
+
         .card:hover {
             transform: scale(1.05);
         }
-        .btn-primary, .btn-success, .btn-danger {
+
+        .btn-primary,
+        .btn-success,
+        .btn-danger {
             transition: background-color 0.3s, transform 0.3s;
         }
-        .btn-primary:hover, .btn-success:hover, .btn-danger:hover {
+
+        .btn-primary:hover,
+        .btn-success:hover,
+        .btn-danger:hover {
             transform: scale(1.1);
         }
     </style>
 </head>
+
 <body>
 
-<div class="sidebar">
+    <div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
             <i class="fas fa-code me-2"></i>JFHK
         </a>
@@ -151,9 +144,9 @@ try {
             <i class="fas fa-user me-1"></i>Perfil
         </a>
         <?php if ($tabela == 'empresa') { ?>
-        <a href="membro_empresa.php">
-            <i class="fas fa-users me-1"></i>Membros
-        </a>
+            <a href="membro_empresa.php">
+                <i class="fas fa-users me-1"></i>Membros
+            </a>
         <?php } ?>
         <a href="#">
             <i class="fas fa-chart-bar me-1"></i>Relatórios
@@ -163,115 +156,86 @@ try {
         </a>
     </div>
 
-<div class="content">
-    <div class="container">
-        <h2 class="my-4"><i class="fas fa-project-diagram"></i> Projetos</h2>
-        
-        <?php if ($tipo_usuario == 'empresa') { ?>
-        <!-- Botão para abrir o modal de adicionar projeto -->
-        <button class="btn btn-success mb-4" data-toggle="modal" data-target="#addProjectModal"><i class="fas fa-plus"></i> Adicionar Projeto</button>
+    <div class="content">
+        <div class="container">
+            <h2 class="my-4"><i class="fas fa-project-diagram"></i> Projetos</h2>
 
-        <!-- Modal para adicionar projeto -->
-        <div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="addProjectModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addProjectModalLabel">Adicionar Projeto</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="projeto.php">
-                            <div class="form-group">
-                                <label for="nome_projeto">Nome do Projeto</label>
-                                <input type="text" class="form-control" id="nome_projeto" name="nome_projeto" required>
+            <?php if ($tipo_usuario == 'empresa') { ?>
+                <!-- Botão para abrir o modal de adicionar projeto -->
+                <button class="btn btn-success mb-4" data-toggle="modal" data-target="#addProjectModal"><i class="fas fa-plus"></i> Adicionar Projeto</button>
+
+                <!-- Modal para adicionar projeto -->
+                <div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addProjectModalLabel">Adicionar Projeto</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label for="tipo_projeto">Tipo do Projeto</label>
-                                <input type="text" class="form-control" id="tipo_projeto" name="tipo_projeto" required>
+                            <div class="modal-body">
+                                <form method="POST" action="projeto.php">
+                                    <div class="form-group">
+                                        <label for="nome_projeto">Nome do Projeto</label>
+                                        <input type="text" class="form-control" id="nome_projeto" name="nome_projeto" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tipo_projeto">Tipo do Projeto</label>
+                                        <input type="text" class="form-control" id="tipo_projeto" name="tipo_projeto" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="data_inicio">Data de Início</label>
+                                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="data_fim">Data de Término</label>
+                                        <input type="date" class="form-control" id="data_fim" name="data_fim" required>
+                                    </div>
+                                    <button type="submit" name="add_project" class="btn btn-success btn-block">Adicionar Projeto</button>
+                                </form>
                             </div>
-                            <div class="form-group">
-                                <label for="data_inicio">Data de Início</label>
-                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="data_fim">Data de Término</label>
-                                <input type="date" class="form-control" id="data_fim" name="data_fim" required>
-                            </div>
-                            <button type="submit" name="add_project" class="btn btn-success btn-block">Adicionar Projeto</button>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Botão para abrir o modal de adicionar membro ao projeto -->
-        <button class="btn btn-primary mb-4" data-toggle="modal" data-target="#addMemberModal"><i class="fas fa-user-plus"></i> Adicionar Membro ao Projeto</button>
 
-        <!-- Modal para adicionar membro ao projeto -->
-        <div class="modal fade" id="addMemberModal" tabindex="-1" role="dialog" aria-labelledby="addMemberModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addMemberModalLabel">Adicionar Membro ao Projeto</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="projeto.php">
-                            <div class="form-group">
-                                <label for="id_projeto">Projeto</label>
-                                <select class="form-control" id="id_projeto" name="id_projeto" required>
-                                    <?php foreach ($projetos as $projeto) { ?>
-                                        <option value="<?php echo $projeto['id_projeto']; ?>"><?php echo htmlspecialchars($projeto['nome']); ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="id_membro">Membro</label>
-                                <select class="form-control" id="id_membro" name="id_membro" required>
-                                    <?php foreach ($membros as $membro) { ?>
-                                        <option value="<?php echo $membro['id_membro']; ?>"><?php echo htmlspecialchars($membro['nome']); ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <button type="submit" name="add_member_to_project" class="btn btn-primary btn-block">Adicionar Membro ao Projeto</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php } ?>
-
-        <!-- Cards de projetos -->
-        <div class="row">
-            <?php foreach ($projetos as $projeto) { ?>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><?php echo htmlspecialchars($projeto['nome']); ?></h5>
-                        <p class="card-text">Tipo: <?php echo htmlspecialchars($projeto['tipo']); ?></p>
-                        <p class="card-text">Início: <?php echo $projeto['data_inicio']; ?></p>
-                        <p class="card-text">Término: <?php echo $projeto['data_fim']; ?></p>
-                        <a href="tarefas_projeto.php?id_projeto=<?php echo $projeto['id_projeto']; ?>" class="btn btn-info">Ver Tarefas</a>
-                        <?php if ($tipo_usuario == 'empresa') { ?>
-                        <form method="POST" action="projeto.php" class="d-inline">
-                            <input type="hidden" name="projeto_id" value="<?php echo $projeto['id_projeto']; ?>">
-                            <button type="submit" name="delete_project" class="btn btn-danger">Deletar</button>
-                        </form>
-                        <?php } ?>
-                    </div>
-                </div>
-            </div>
             <?php } ?>
+
+            <!-- Cards de projetos -->
+            <div class="row">
+                <?php
+
+                $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim FROM projeto WHERE id_empresa = :id_empresa");
+                $stmt->execute([':id_empresa' => $id_empresa]);
+                $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($projetos as $projeto) { ?>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo htmlspecialchars($projeto['nome']); ?></h5>
+                                <p class="card-text">Tipo: <?php echo htmlspecialchars($projeto['tipo']); ?></p>
+                                <p class="card-text">Início: <?php echo $projeto['data_inicio']; ?></p>
+                                <p class="card-text">Término: <?php echo $projeto['data_fim']; ?></p>
+                                <a href="tarefas_projeto.php?id_projeto=<?php echo $projeto['id_projeto']; ?>" class="btn btn-info">Ver Tarefas</a>
+                                <?php if ($tipo_usuario == 'empresa') { ?>
+                                    <form method="POST" action="projeto.php" class="d-inline">
+                                        <input type="hidden" name="projeto_id" value="<?php echo $projeto['id_projeto']; ?>">
+                                        <button type="submit" name="delete_project" class="btn btn-danger">Deletar</button>
+                                    </form>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

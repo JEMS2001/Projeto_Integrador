@@ -31,18 +31,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 if ($tipo_usuario == "empresa") {
                     $_SESSION['id_empresa'] = $row['id_empresa'];
+                } else if ($tipo_usuario == "membro") {
+                    $_SESSION['id_membro'] = $row['id_membro'];
+                    
+                    // Verifica se o membro tem um id_empresa associado
+                    if (!empty($row['id_empresa'])) {
+                        $_SESSION['id_empresa'] = $row['id_empresa'];
+                        
+                        // Inicia o monitoramento da sessão
+                        $sql_sessao = "INSERT INTO sessao_usuario (id_membro, data_inicio) VALUES (:id_membro, NOW())";
+                        $stmt_sessao = $pdo->prepare($sql_sessao);
+                        $stmt_sessao->bindParam(':id_membro', $row['id_membro']);
+                        $stmt_sessao->execute();
+                        
+                        $_SESSION['id_sessao'] = $pdo->lastInsertId();
+
+                        // Atualiza o status de login do membro
+                        $sql_update = "UPDATE membro SET esta_logado = TRUE, ultimo_login = NOW() WHERE id_membro = :id_membro";
+                        $stmt_update = $pdo->prepare($sql_update);
+                        $stmt_update->bindParam(':id_membro', $row['id_membro']);
+                        $stmt_update->execute();
+                    }
                 }
 
                 header("Location: dashboard.php");
+                exit();
             } else {
                 echo "<div class='alert alert-danger'>Email ou senha incorretos.</div>";
                 unset($_SESSION['email']);
                 header("Location: login.php");
+                exit();
             }
         } else {
             echo "<div class='alert alert-danger'>Email ou senha incorretos.</div>";
             unset($_SESSION['email']);
             header("Location: login.php");
+            exit();
         }
     } catch (PDOException $e) {
         echo "Erro: " . $e->getMessage();

@@ -16,6 +16,7 @@ CREATE TABLE membro (
     email VARCHAR(100),
     senha VARCHAR(100),
     id_empresa INT,
+    imagem varchar(200);
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
@@ -47,3 +48,30 @@ CREATE TABLE tarefa (
     FOREIGN KEY (id_membro) REFERENCES membro(id_membro),
     FOREIGN KEY (id_projeto) REFERENCES projeto(id_projeto)
 );
+
+-- Modificação na tabela de membros para incluir o status de login
+ALTER TABLE membro
+ADD COLUMN esta_logado BOOLEAN DEFAULT FALSE,
+ADD COLUMN ultimo_login DATETIME;
+
+-- Nova tabela para registrar as sessões dos usuários
+CREATE TABLE sessao_usuario (
+    id_sessao INT AUTO_INCREMENT PRIMARY KEY,
+    id_membro INT,
+    data_inicio DATETIME NOT NULL,
+    data_fim DATETIME,
+    duracao_segundos INT,
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro)
+);
+
+-- Índice para melhorar o desempenho das consultas
+CREATE INDEX idx_membro_data ON sessao_usuario (id_membro, data_inicio);
+
+
+ALTER TABLE membro
+ADD COLUMN imagem varchar(500);
+
+
+
+ALTER TABLE empresa
+ADD COLUMN imagem varchar(500);
