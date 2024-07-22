@@ -96,3 +96,11 @@ CHANGE COLUMN tempo_estimado tempo_estimado INT NOT NULL COMMENT 'Tempo estimado
 -- Índices para melhorar o desempenho
 CREATE INDEX idx_tarefa_status ON tarefa (status);
 CREATE INDEX idx_progresso_tarefa ON progresso_tarefa (id_tarefa, data_atualizacao);
+
+
+ALTER TABLE projeto
+ADD COLUMN banner VARCHAR(255),
+ADD COLUMN status VARCHAR(20) DEFAULT 'no prazo';
+
+
+

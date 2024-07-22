@@ -461,10 +461,6 @@ endif; ?>
                             <label for="editTaskEstimatedTime">Tempo Estimado (em dias)</label>
                             <input type="number" class="form-control" id="editTaskEstimatedTime" name="tempo_estimado" required>
                         </div>
-                        <div class="form-group">
-                            <label for="editTaskTimeSpent">Tempo Gasto (em dias)</label>
-                            <input type="number" class="form-control" id="editTaskTimeSpent" name="tempo_gasto">
-                        </div>
                         <button type="submit" name="edit_task" class="btn btn-primary">Salvar Alterações</button>
                     </form>
                 </div>

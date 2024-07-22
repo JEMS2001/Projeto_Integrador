@@ -26,23 +26,77 @@ try {
 
         // Adicionar projeto (apenas para empresas)
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_project'])) {
-            $stmt = $pdo->prepare("INSERT INTO projeto (nome, tipo, data_inicio, data_fim, id_empresa) VALUES (:nome, :tipo, :data_inicio, :data_fim, :id_empresa)");
+            $banner_path = null;
+            if (isset($_FILES['banner']) && $_FILES['banner']['error'] == UPLOAD_ERR_OK) {
+                $banner_path = 'uploads/' . uniqid() . '_' . basename($_FILES['banner']['name']);
+                move_uploaded_file($_FILES['banner']['tmp_name'], $banner_path);
+            }
+            
+            $stmt = $pdo->prepare("INSERT INTO projeto (nome, tipo, data_inicio, data_fim, id_empresa, status, banner_path) VALUES (:nome, :tipo, :data_inicio, :data_fim, :id_empresa, :status, :banner_path)");
             $stmt->execute([
                 ':nome' => $_POST['nome_projeto'],
                 ':tipo' => $_POST['tipo_projeto'],
                 ':data_inicio' => $_POST['data_inicio'],
                 ':data_fim' => $_POST['data_fim'],
+                ':id_empresa' => $id_empresa,
+                ':status' => $_POST['status'],
+                ':banner_path' => $banner_path
+            ]);
+        }
+
+        // Editar projeto (apenas para empresas)
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_project'])) {
+            $banner_path = $_POST['current_banner'];
+            if (isset($_FILES['banner']) && $_FILES['banner']['error'] == UPLOAD_ERR_OK) {
+                $banner_path = 'uploads/' . uniqid() . '_' . basename($_FILES['banner']['name']);
+                move_uploaded_file($_FILES['banner']['tmp_name'], $banner_path);
+            }
+
+            $stmt = $pdo->prepare("UPDATE projeto SET nome = :nome, tipo = :tipo, data_inicio = :data_inicio, data_fim = :data_fim, status = :status, banner_path = :banner_path WHERE id_projeto = :id_projeto AND id_empresa = :id_empresa");
+            $stmt->execute([
+                ':nome' => $_POST['nome_projeto'],
+                ':tipo' => $_POST['tipo_projeto'],
+                ':data_inicio' => $_POST['data_inicio'],
+                ':data_fim' => $_POST['data_fim'],
+                ':status' => $_POST['status'],
+                ':banner_path' => $banner_path,
+                ':id_projeto' => $_POST['projeto_id'],
                 ':id_empresa' => $id_empresa
             ]);
         }
 
-        // Deletar projeto (apenas para empresas)
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_project'])) {
-            $stmt = $pdo->prepare("DELETE FROM projeto WHERE id_projeto = :id_projeto AND id_empresa = :id_empresa");
-            $stmt->execute([
-                ':id_projeto' => $_POST['projeto_id'],
-                ':id_empresa' => $id_empresa
-            ]);
+            $pdo->beginTransaction();
+            try {
+                // Deletar progresso das tarefas associadas ao projeto
+                $stmt = $pdo->prepare("
+                    DELETE pt 
+                    FROM progresso_tarefa pt
+                    INNER JOIN tarefa t ON pt.id_tarefa = t.id_tarefa
+                    WHERE t.id_projeto = :id_projeto
+                ");
+                $stmt->execute([':id_projeto' => $_POST['projeto_id']]);
+        
+                // Deletar tarefas associadas ao projeto
+                $stmt = $pdo->prepare("DELETE FROM tarefa WHERE id_projeto = :id_projeto");
+                $stmt->execute([':id_projeto' => $_POST['projeto_id']]);
+        
+                // Deletar registros na tabela membro_projeto primeiro
+                $stmt = $pdo->prepare("DELETE FROM membro_projeto WHERE id_projeto = :id_projeto");
+                $stmt->execute([':id_projeto' => $_POST['projeto_id']]);
+        
+                // Deletar o projeto
+                $stmt = $pdo->prepare("DELETE FROM projeto WHERE id_projeto = :id_projeto AND id_empresa = :id_empresa");
+                $stmt->execute([
+                    ':id_projeto' => $_POST['projeto_id'],
+                    ':id_empresa' => $id_empresa
+                ]);
+        
+                $pdo->commit();
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                die("Erro ao deletar projeto: " . $e->getMessage());
+            }
         }
     } else {
         // Buscar id_membro
@@ -53,7 +107,7 @@ try {
 
         // Buscar projetos associados ao membro
         $stmt = $pdo->prepare("
-            SELECT p.id_projeto, p.nome, p.tipo, p.data_inicio, p.data_fim 
+            SELECT p.id_projeto, p.nome, p.tipo, p.data_inicio, p.data_fim, p.status, p.banner_path
             FROM projeto p
             INNER JOIN membro_projeto mp ON p.id_projeto = mp.id_projeto
             WHERE mp.id_membro = :id_membro
@@ -65,6 +119,7 @@ try {
     die("Erro na conexão: " . $e->getMessage());
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -128,6 +183,14 @@ try {
         .btn-danger:hover {
             transform: scale(1.1);
         }
+
+        .banner {
+            height: 150px;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px 15px 0 0;
+        }
     </style>
 </head>
 
@@ -177,7 +240,7 @@ try {
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form method="POST" action="projeto.php">
+                                <form method="POST" action="projeto.php" enctype="multipart/form-data">
                                     <div class="form-group">
                                         <label for="nome_projeto">Nome do Projeto</label>
                                         <input type="text" class="form-control" id="nome_projeto" name="nome_projeto" required>
@@ -194,6 +257,18 @@ try {
                                         <label for="data_fim">Data de Término</label>
                                         <input type="date" class="form-control" id="data_fim" name="data_fim" required>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="status">Status</label>
+                                        <select class="form-control" id="status" name="status">
+                                            <option value="No Prazo">No Prazo</option>
+                                            <option value="Atrasado">Atrasado</option>
+                                            <option value="Perto do Prazo">Perto do Prazo</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="banner">Banner do Projeto</label>
+                                        <input type="file" class="form-control-file" id="banner" name="banner">
+                                    </div>
                                     <button type="submit" name="add_project" class="btn btn-success btn-block">Adicionar Projeto</button>
                                 </form>
                             </div>
@@ -201,43 +276,111 @@ try {
                     </div>
                 </div>
 
-
             <?php } ?>
 
             <!-- Cards de projetos -->
             <div class="row">
                 <?php
 
-                $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim FROM projeto WHERE id_empresa = :id_empresa");
+                $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim, status, banner_path FROM projeto WHERE id_empresa = :id_empresa");
                 $stmt->execute([':id_empresa' => $id_empresa]);
                 $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach ($projetos as $projeto) { ?>
                     <div class="col-md-4">
                         <div class="card">
+                            <?php if ($projeto['banner_path']) { ?>
+                                <div class="banner" style="background-image: url('<?php echo htmlspecialchars($projeto['banner_path']); ?>');"></div>
+                            <?php } else { ?>
+                                <div class="banner" style="background-color: grey;"></div>
+                            <?php } ?>
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo htmlspecialchars($projeto['nome']); ?></h5>
                                 <p class="card-text">Tipo: <?php echo htmlspecialchars($projeto['tipo']); ?></p>
                                 <p class="card-text">Início: <?php echo $projeto['data_inicio']; ?></p>
                                 <p class="card-text">Término: <?php echo $projeto['data_fim']; ?></p>
+                                <p class="card-text">Status: <?php echo $projeto['status']; ?></p>
                                 <a href="tarefas_projeto.php?id_projeto=<?php echo $projeto['id_projeto']; ?>" class="btn btn-info">Ver Tarefas</a>
                                 <?php if ($tipo_usuario == 'empresa') { ?>
-                                    <form method="POST" action="projeto.php" class="d-inline">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#editProjectModal<?php echo $projeto['id_projeto']; ?>">Editar</button>
+                                    <form method="POST" action="projeto.php" class="d-inline" onsubmit="return confirm('Tem certeza que deseja deletar este projeto?');">
                                         <input type="hidden" name="projeto_id" value="<?php echo $projeto['id_projeto']; ?>">
                                         <button type="submit" name="delete_project" class="btn btn-danger">Deletar</button>
                                     </form>
-                                <?php } ?>
+
+                            <!-- Modal para editar projeto -->
+                            <div class="modal fade" id="editProjectModal<?php echo $projeto['id_projeto']; ?>" tabindex="-1" role="dialog" aria-labelledby="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>">Editar Projeto</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="POST" action="projeto.php" enctype="multipart/form-data">
+                                                <input type="hidden" name="id_projeto" value="<?php echo $projeto['id_projeto']; ?>">
+                                                <div class="form-group">
+                                                    <label for="nome_projeto">Nome do Projeto</label>
+                                                    <input type="text" class="form-control" id="nome_projeto<?php echo $projeto['id_projeto']; ?>" name="nome_projeto" value="<?php echo htmlspecialchars($projeto['nome']); ?>" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="tipo_projeto">Tipo do Projeto</label>
+                                                    <input type="text" class="form-control" id="tipo_projeto<?php echo $projeto['id_projeto']; ?>" name="tipo_projeto" value="<?php echo htmlspecialchars($projeto['tipo']); ?>" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="data_inicio">Data de Início</label>
+                                                    <input type="date" class="form-control" id="data_inicio<?php echo $projeto['id_projeto']; ?>" name="data_inicio" value="<?php echo $projeto['data_inicio']; ?>" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="data_fim">Data de Término</label>
+                                                    <input type="date" class="form-control" id="data_fim<?php echo $projeto['id_projeto']; ?>" name="data_fim" value="<?php echo $projeto['data_fim']; ?>" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="status">Status</label>
+                                                    <select class="form-control" id="status<?php echo $projeto['id_projeto']; ?>" name="status">
+                                                        <option value="No Prazo" <?php if ($projeto['status'] == 'No Prazo') echo 'selected'; ?>>No Prazo</option>
+                                                        <option value="Atrasado" <?php if ($projeto['status'] == 'Atrasado') echo 'selected'; ?>>Atrasado</option>
+                                                        <option value="Perto do Prazo" <?php if ($projeto['status'] == 'Perto do Prazo') echo 'selected'; ?>>Perto do Prazo</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="banner">Banner do Projeto</label>
+                                                    <input type="file" class="form-control-file" id="banner<?php echo $projeto['id_projeto']; ?>" name="banner" onchange="previewBanner(this, 'preview<?php echo $projeto['id_projeto']; ?>')">
+                                                </div>
+                                                <div class="form-group">
+                                                    <img id="preview<?php echo $projeto['id_projeto']; ?>" src="<?php echo htmlspecialchars($projeto['banner_path']); ?>" alt="Preview do Banner" style="max-width: 100%; height: auto;">
+                                                </div>
+                                                <button type="submit" name="edit_project" class="btn btn-primary btn-block">Salvar Alterações</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        <?php } ?>
                         </div>
                     </div>
-                <?php } ?>
+                </div>
+            <?php } ?>
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function previewBanner(input, previewId) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewId).src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </body>
 
 </html>
