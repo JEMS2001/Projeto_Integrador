@@ -148,9 +148,11 @@ try {
                 <i class="fas fa-users me-1"></i>Membros
             </a>
         <?php } ?>
-        <a href="#">
-            <i class="fas fa-chart-bar me-1"></i>Relatórios
-        </a>
+        <?php if ($tabela == 'empresa') { ?>
+            <a href="monitoramento.php">
+                <i class="fas fa-chart-bar me-1"></i>Relatórios
+            </a>
+        <?php } ?>
         <a href="sair.php" class="btn btn-danger mt-auto">
             <i class="fas fa-sign-out-alt me-1"></i>Sair
         </a>

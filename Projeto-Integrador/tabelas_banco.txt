@@ -4,7 +4,8 @@ CREATE TABLE empresa (
     cnpj VARCHAR(20),
     endereco VARCHAR(255),
     email VARCHAR(100),
-    senha VARCHAR(100)
+    senha VARCHAR(100),
+    imagem varchar(400);
 );
 
 CREATE TABLE membro (
@@ -16,7 +17,7 @@ CREATE TABLE membro (
     email VARCHAR(100),
     senha VARCHAR(100),
     id_empresa INT,
-    imagem varchar(200);
+    imagem varchar(400);
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
@@ -68,10 +69,30 @@ CREATE TABLE sessao_usuario (
 CREATE INDEX idx_membro_data ON sessao_usuario (id_membro, data_inicio);
 
 
-ALTER TABLE membro
-ADD COLUMN imagem varchar(500);
+-- Modificação na tabela tarefa
+ALTER TABLE tarefa
+ADD COLUMN nivel_dificuldade ENUM('Fácil', 'Médio', 'Difícil') NOT NULL,
+ADD COLUMN tempo_estimado INT NOT NULL COMMENT 'Tempo estimado em dias',
+ADD COLUMN data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN data_conclusao DATETIME;
+
+-- Nova tabela para rastrear o progresso das tarefas
+CREATE TABLE progresso_tarefa (
+    id_progresso INT AUTO_INCREMENT PRIMARY KEY,
+    id_tarefa INT,
+    id_membro INT,
+    status_anterior VARCHAR(100),
+    status_novo VARCHAR(100),
+    tempo_gasto INT COMMENT 'Tempo gasto em dias',
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_tarefa) REFERENCES tarefa(id_tarefa),
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro)
+);
+
+ALTER TABLE tarefa
+CHANGE COLUMN tempo_estimado tempo_estimado INT NOT NULL COMMENT 'Tempo estimado em dias';
 
 
-
-ALTER TABLE empresa
-ADD COLUMN imagem varchar(500);
+-- Índices para melhorar o desempenho
+CREATE INDEX idx_tarefa_status ON tarefa (status);
+CREATE INDEX idx_progresso_tarefa ON progresso_tarefa (id_tarefa, data_atualizacao);

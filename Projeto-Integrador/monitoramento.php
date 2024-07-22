@@ -8,6 +8,7 @@ if (!isset($_SESSION['id_empresa'])) {
 }
 
 $empresa_id_logada = $_SESSION['id_empresa'];
+$tabela = $_SESSION['tipo_usuario'];
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -47,6 +48,7 @@ function formatHoursMinutes($hours) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Monitoramento de Presença</title>
+    <link rel="stylesheet" href="estilo.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -57,7 +59,6 @@ function formatHoursMinutes($hours) {
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
             background-color: #f8f9fa;
         }
         .container {
@@ -141,9 +142,83 @@ function formatHoursMinutes($hours) {
             background-color: #f8d7da;
             color: #721c24;
         }
+
+        .sidebar {
+            width: 250px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            position: fixed;
+            height: 100%;
+            padding-top: 60px;
+            left: -250px;
+            transition: left 0.3s;
+            z-index: 1000;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 15px;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            background: var(--secondary-color);
+        }
+        .navbar-brand {
+            color: var(--accent-color) !important;
+        }
+        #sidebarCollapse {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                left: 0;
+            }
+            #sidebarCollapse {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
+    
+    <div class="sidebar">
+        <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
+            <i class="fas fa-code me-2"></i>JFHK
+        </a>
+        <a href="projeto.php">
+            <i class="fas fa-project-diagram me-1"></i>Projetos
+        </a>
+        <a href="perfil.php">
+            <i class="fas fa-user me-1"></i>Perfil
+        </a>
+        <?php if ($tabela == 'empresa') { ?>
+            <a href="membro_empresa.php">
+                <i class="fas fa-users me-1"></i>Membros
+            </a>
+        <?php } ?>
+        <?php if ($tabela == 'empresa') { ?>
+            <a href="monitoramento.php">
+                <i class="fas fa-chart-bar me-1"></i>Relatórios
+            </a>
+        <?php } ?>
+        <a href="sair.php" class="btn btn-danger mt-auto">
+            <i class="fas fa-sign-out-alt me-1"></i>Sair
+        </a>
+    </div>
+
+
     <div class="container">
         <h1><i class="fas fa-chart-line"></i> Relatório de Monitoramento de Presença</h1>
         

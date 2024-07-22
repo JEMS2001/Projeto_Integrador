@@ -36,13 +36,13 @@ try {
 }
 
 
-if (empty($userData['imagem']) || $userData['imagem'] === '/img/avatares/padrao.png') {
-    $userData['imagem'] = 'xa/img/avatares/padrao.png'; 
+if (empty($userData['imagem']) || $userData['imagem'] === 'img/avatares/padrao.png') {
+    $userData['imagem'] = 'img/avatares/padrao.png'; 
 }
 
 
-if (!str_starts_with($userData['imagem'], '/img/avatares')) {
-    $userData['imagem'] = '/img/avatares/padrao.png';
+if (!str_starts_with($userData['imagem'], 'img/avatares')) {
+    $userData['imagem'] = 'img/avatares/padrao.png';
 }
 ?>
 <!DOCTYPE html>
@@ -292,9 +292,11 @@ if (!str_starts_with($userData['imagem'], '/img/avatares')) {
                 <i class="fas fa-users me-1"></i>Membros
             </a>
         <?php } ?>
-        <a href="#">
-            <i class="fas fa-chart-bar me-1"></i>Relatórios
-        </a>
+        <?php if ($tabela == 'empresa') { ?>
+            <a href="monitoramento.php">
+                <i class="fas fa-chart-bar me-1"></i>Relatórios
+            </a>
+        <?php } ?>
         <a href="sair.php" class="btn btn-danger mt-auto">
             <i class="fas fa-sign-out-alt me-1"></i>Sair
         </a>
@@ -395,7 +397,31 @@ if (!str_starts_with($userData['imagem'], '/img/avatares')) {
         </div>
     </div>
 
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const fadeElements = document.querySelectorAll('.user-profile-wrapper .fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${0.2 * index}s`;
+            });
+        });
+
+        document.getElementById('sidebarCollapse').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.user-profile-wrapper').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        });
+
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.user-profile-wrapper').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        });
+
         function displaySelectedImage(event, elementId) {
             const selectedImage = document.getElementById(elementId);
             const fileInput = event.target;
@@ -426,50 +452,36 @@ if (!str_starts_with($userData['imagem'], '/img/avatares')) {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    const uploadMessage = document.getElementById('uploadMessage');
-                    if (data.success) {
-                        uploadMessage.innerHTML = data.message;
+                .then(response => response.text()) // Obtém a resposta como texto
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text); // Tenta analisar o texto como JSON
 
-                        const profileImage = document.querySelector('.profile-image img');
-                        profileImage.src = data.filePath + '?v=' + new Date().getTime(); // Adiciona um parâmetro de consulta para evitar cache
+                        const uploadMessage = document.getElementById('uploadMessage');
+                        if (data.success) {
+                            uploadMessage.innerHTML = data.message;
 
-                       
-                    } else {
-                        uploadMessage.innerHTML = data.message;
+                            const profileImage = document.querySelector('.profile-image img');
+                            profileImage.src = data.filePath + '?v=' + new Date().getTime(); // Adiciona um parâmetro de consulta para evitar cache
+
+                            console.log('Imagem enviada com sucesso:', data.filePath);
+                        } else {
+                            uploadMessage.innerHTML = data.message;
+                            console.log('Erro no upload:', data.message);
+                        }
+                    } catch (error) {
+                        // Se a resposta não for um JSON válido, registra o texto bruto para depuração
+                        console.error('Erro ao analisar a resposta como JSON:', text);
+                        document.getElementById('uploadMessage').innerHTML = 'Desculpe, houve um erro inesperado. Verifique os logs do servidor.';
                     }
                 })
                 .catch(error => {
                     console.error('Erro ao enviar o arquivo:', error);
                     document.getElementById('uploadMessage').innerHTML = 'Desculpe, houve um erro ao enviar seu arquivo.';
                 });
-        }
-    </script>
+}
 
 
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const fadeElements = document.querySelectorAll('.user-profile-wrapper .fade-in');
-            fadeElements.forEach((el, index) => {
-                el.style.animationDelay = `${0.2 * index}s`;
-            });
-        });
-
-        document.getElementById('sidebarCollapse').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('active');
-            document.querySelector('.user-profile-wrapper').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        });
-
-        document.getElementById('overlay').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.remove('active');
-            document.querySelector('.user-profile-wrapper').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        });
     </script>
 </body>
 
