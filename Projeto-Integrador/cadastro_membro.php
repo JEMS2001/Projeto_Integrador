@@ -46,9 +46,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php include 'layout/header.php'; ?>
 
 <style>
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
 .registration-container {
     display: flex;
-    height: 100vh;
+    flex-direction: row;
+    height: auto;
+    margin-bottom: 20px; /* Adicione um pouco de espaço abaixo do conteúdo */
 }
 
 .registration-form {
@@ -72,6 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     max-width: 100%;
     height: auto;
 }
+
 .registration-form h1 {
     margin-bottom: 20px;
     opacity: 0;
@@ -152,9 +169,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     transform: translateX(-20px);
     transition: opacity 0.5s, transform 0.5s;
 }
-</style>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
+footer {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: 100px;
+    margin-top: auto; /* Empurra o footer para a parte inferior */
+}
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
 <div class="container mt-4">
     <div class="registration-container">

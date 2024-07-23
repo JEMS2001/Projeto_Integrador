@@ -48,6 +48,7 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
     transition: padding 0.3s ease;
     padding: 1rem;
+    height: 70px;
 }
 
 .navbar-brand {
@@ -91,6 +92,8 @@ header {
         margin-top: 0.5rem;
     }
 }
+
+
 
 /* --------------------------Hero Section----------------------------------------- */
 
@@ -369,11 +372,15 @@ header {
 /* --------------------------Footer----------------------------------------- */
 
 /* Estilos para o footer */
+
 footer {
-    background-color: #343a40; /* Cor de fundo escura */
-    color: #ffffff; /* Cor do texto branco */
-    padding: 1.5rem 0; /* Preenchimento interno */
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: 100px;
+    padding-top: 50px; /* Adiciona um padding extra na parte superior do footer */
 }
+
 
 footer p {
     margin-bottom: 0; /* Remover margem inferior do parágrafo */

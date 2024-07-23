@@ -45,3 +45,13 @@ body {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* o texto estava muito grudado a navbar */
+.text-center {
+    margin-top: 20px; 
+}
+
+.navbar {
+    margin-bottom: 30px; 
+    padding-bottom: 20px; 
+}

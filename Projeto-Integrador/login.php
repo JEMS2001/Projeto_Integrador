@@ -68,7 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     justify-content: center;
 }
 
-
 .login-form h1 {
     margin-bottom: 20px;
     opacity: 0;
@@ -105,6 +104,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 .login-form button:hover {
     background-color: #e89419;
 }
+
+.login-background {
+    margin-bottom: 100px; /* Ajuste o valor conforme necessário */
+}
+
+.footer-spacing {
+    height: 100px; /* Ajuste o valor conforme necessário */
+}
 </style>
 
 <div class="container">
@@ -136,6 +143,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+    <!-- Adiciona o espaçamento entre a imagem e o footer -->
+    <div class="footer-spacing"></div>
 </div>
 
 <script>

@@ -11,28 +11,35 @@ if (isset($_SESSION['email'])) {
 include_once('config.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['nome'], $_POST['cnpj'], $_POST['endereco'], $_POST['email'], $_POST['senha'])) {
+    if (isset($_POST['nome'], $_POST['cnpj'], $_POST['endereco'], $_POST['email'], $_POST['senha'], $_POST['confirmarSenha'])) {
         $nome = $_POST['nome'];
         $cnpj = $_POST['cnpj'];
         $endereco = $_POST['endereco'];
         $email = $_POST['email'];
-        $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+        $senha = $_POST['senha'];
+        $confirmarSenha = $_POST['confirmarSenha'];
 
-        $sql = "INSERT INTO empresa(nome, cnpj, endereco, email, senha) VALUES (:nome, :cnpj, :endereco, :email, :senha)";
-        $stmt = $pdo->prepare($sql);
-
-        $stmt->bindParam(':nome', $nome);
-        $stmt->bindParam(':cnpj', $cnpj);
-        $stmt->bindParam(':endereco', $endereco);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':senha', $senha);
-
-        if ($stmt->execute()) {
-            $_SESSION['mensagem'] = "Cadastro realizado com sucesso.";
-            header("Location: home.php");
-            exit();
+        if ($senha !== $confirmarSenha) {
+            $mensagem = "As senhas não coincidem. Por favor, tente novamente.";
         } else {
-            $mensagem = "Erro ao inserir o registro: " . $stmt->errorInfo()[2];
+            $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+
+            $sql = "INSERT INTO empresa(nome, cnpj, endereco, email, senha) VALUES (:nome, :cnpj, :endereco, :email, :senha)";
+            $stmt = $pdo->prepare($sql);
+
+            $stmt->bindParam(':nome', $nome);
+            $stmt->bindParam(':cnpj', $cnpj);
+            $stmt->bindParam(':endereco', $endereco);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':senha', $senhaHash);
+
+            if ($stmt->execute()) {
+                $_SESSION['mensagem'] = "Cadastro realizado com sucesso.";
+                header("Location: home.php");
+                exit();
+            } else {
+                $mensagem = "Erro ao inserir o registro: " . $stmt->errorInfo()[2];
+            }
         }
     } else {
         $mensagem = "Todos os campos do formulário devem ser preenchidos.";
@@ -43,101 +50,115 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php include 'layout/header.php'; ?>
 
 <style>
-.registration-container {
-    display: flex;
-    height: 100vh;
-    align-items: center; /* Centraliza verticalmente */
-}
+    /* Ajustes para espaçamento */
+    .text-center {
+        margin-top: 20px; 
+    }
 
-.registration-form {
-    width: 50%;
-    padding: 40px;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+    .navbar {
+        margin-bottom: 30px; 
+        padding-bottom: 20px; 
+    }
 
-.login-background {
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white; /* Adicione uma cor de fundo se desejar */
-}
+    .registration-container {
+        display: flex;
+        height: auto; /* Permite que o container cresça com o conteúdo */
+        align-items: center;
+        margin-bottom: 100px; /* Espaço reduzido antes do footer */
+    }
 
-.login-background img {
-    max-width: 100%;
-    height: auto;
-}
+    .registration-form {
+        width: 50%;
+        padding: 40px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-.registration-form h1 {
-    margin-bottom: 20px;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .login-background {
+        width: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+    }
 
-.registration-form input[type="text"], 
-.registration-form input[type="email"], 
-.registration-form input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .login-background img {
+        max-width: 100%;
+        height: auto;
+    }
 
-.registration-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
-}
+    .registration-form h1 {
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 
-.registration-form button:hover {
-    background-color: #e89419;
-}
+    .registration-form input[type="text"], 
+    .registration-form input[type="email"], 
+    .registration-form input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 
-.registration-form .form-group {
-    margin-bottom: 15px;
-}
+    .registration-form button {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
+    }
 
-.registration-form label {
-    display: block;
-    margin-bottom: 5px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .registration-form button:hover {
+        background-color: #e89419;
+    }
 
-.password-hint {
-    font-size: 0.9em;
-    color: #888;
-    margin-top: -10px;
-    margin-bottom: 15px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .registration-form .form-group {
+        margin-bottom: 15px;
+    }
 
-.login-background img {
-    max-width: 100%;
-    height: auto;
-}
+    .registration-form label {
+        display: block;
+        margin-bottom: 5px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
+
+    .password-hint {
+        font-size: 0.9em;
+        color: #888;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
+
+    footer {
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 1.5rem 0;
+        height: 100px;
+        padding-top: 20px; /* Padding adicional no topo do footer */
+        margin-top: 20px; /* Espaço adicional acima do footer */
+    }
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-
 
 <div class="container">
     <div class="registration-container">
@@ -229,3 +250,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php include 'layout/footer.php'; ?>
+
