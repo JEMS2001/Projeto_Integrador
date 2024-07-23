@@ -76,7 +76,7 @@ function getProjeto($pdo, $tipo_usuario, $email, $id_projeto) {
 
 function getMembrosDoProjeto($pdo, $id_projeto) {
     $stmt = $pdo->prepare("
-        SELECT m.id_membro, m.nome 
+        SELECT m.id_membro, m.nome, m.imagem
         FROM membro m 
         INNER JOIN membro_projeto mp ON m.id_membro = mp.id_membro 
         WHERE mp.id_projeto = :id_projeto
@@ -87,11 +87,11 @@ function getMembrosDoProjeto($pdo, $id_projeto) {
 
 function getTarefas($pdo, $tipo_usuario, $email, $id_projeto) {
     if ($tipo_usuario == 'empresa') {
-        $stmt = $pdo->prepare("SELECT t.*, m.nome as membro_nome FROM tarefa t LEFT JOIN membro m ON t.id_membro = m.id_membro WHERE t.id_projeto = :id_projeto");
+        $stmt = $pdo->prepare("SELECT t.*, m.nome as membro_nome, m.imagem as membro_imagem FROM tarefa t LEFT JOIN membro m ON t.id_membro = m.id_membro WHERE t.id_projeto = :id_projeto");
         $stmt->execute([':id_projeto' => $id_projeto]);
     } else {
         $stmt = $pdo->prepare("
-            SELECT t.*, m.nome as membro_nome 
+            SELECT t.*, m.nome as membro_nome, m.imagem as membro_imagem
             FROM tarefa t 
             LEFT JOIN membro m ON t.id_membro = m.id_membro 
             WHERE t.id_projeto = :id_projeto AND m.email = :email
@@ -144,6 +144,14 @@ function adicionarMembroAoProjeto($pdo, $id_projeto, $id_membro) {
         $stmt->execute([':id_membro' => $id_membro, ':id_projeto' => $id_projeto]);
     }
 }
+
+function getMemberImage($pdo, $id_membro) {
+    $stmt = $pdo->prepare("SELECT imagem FROM membro WHERE id_membro = :id_membro");
+    $stmt->execute([':id_membro' => $id_membro]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result ? $result['imagem'] : null;
+}
+
 ?>
 
 
@@ -161,6 +169,12 @@ function adicionarMembroAoProjeto($pdo, $id_projeto, $id_membro) {
 
     <link rel="stylesheet" href="estilo.css">
     <style>
+        .member-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
         .sidebar {
             width: 250px;
             background: var(--primary-color);
@@ -267,16 +281,36 @@ function adicionarMembroAoProjeto($pdo, $id_projeto, $id_membro) {
 </div>
 
 <div class="content">
-    <h2>Detalhes do Projeto: <?php echo htmlspecialchars($projeto['nome']); ?></h2>
-    <p><strong>Tipo:</strong> <?php echo htmlspecialchars($projeto['tipo']); ?></p>
-    <p><strong>Data de Início:</strong> <?php echo htmlspecialchars($projeto['data_inicio']); ?></p>
-    <p><strong>Data de Término:</strong> <?php echo htmlspecialchars($projeto['data_fim']); ?></p>
+<h2>Detalhes do Projeto: <?php echo htmlspecialchars($projeto['nome']); ?></h2>
+<p><strong>Tipo:</strong> <?php echo htmlspecialchars($projeto['tipo']); ?></p>
+<p><strong>Data de Início:</strong> <?php echo htmlspecialchars($projeto['data_inicio']); ?></p>
+<p><strong>Data de Término:</strong> <?php echo htmlspecialchars($projeto['data_fim']); ?></p>
 
-    <?php if ($tipo_usuario == 'empresa'): ?>
+<h4>Membros do Projeto:</h4>
+<div class="d-flex flex-wrap mb-3">
+    <?php foreach ($membros_projeto as $membro): ?>
+        <div class="mr-3 mb-2 text-center">
+            <?php if ($membro['imagem']): ?>
+                <img src="<?php echo htmlspecialchars($membro['imagem']); ?>" 
+                     alt="<?php echo htmlspecialchars($membro['nome']); ?>" 
+                     class="rounded-circle" 
+                     style="width: 50px; height: 50px; object-fit: cover;">
+            <?php else: ?>
+                <i class="fas fa-user-circle" id="icone_de_membro" style="font-size: 50px;"></i>
+            <?php endif; ?>
+            <p class="mb-0 mt-1"><?php echo htmlspecialchars($membro['nome']); ?></p>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+<?php if ($tipo_usuario == 'empresa'): ?>
     <button type="button" class="btn btn-custom btn-add-task" data-toggle="modal" data-target="#addTaskModal">
         <i class="fas fa-plus"></i> Adicionar Tarefa
     </button>
 
+    <a href="produtividade_projeto.php?id_projeto=<?php echo $id_projeto; ?>" class="btn btn-info mb-3">
+        <i class="fas fa-chart-line"></i> Produtividade
+    </a>
 
     <!-- Botão para abrir o modal de adicionar membro ao projeto -->
     <button type="button" class="btn btn-custom mb-4" data-toggle="modal" data-target="#addMemberModal">
@@ -298,9 +332,11 @@ function adicionarMembroAoProjeto($pdo, $id_projeto, $id_membro) {
                         <div class="form-group">
                             <label for="id_membro">Membro</label>
                             <select class="form-control" id="id_membro" name="id_membro" required>
-                                <?php foreach ($membros as $membro) { ?>
-                                    <option value="<?php echo $membro['id_membro']; ?>"><?php echo htmlspecialchars($membro['nome']); ?></option>
-                                <?php } ?>
+                                <?php foreach ($membros as $membro): ?>
+                                    <option value="<?php echo $membro['id_membro']; ?>">
+                                        <?php echo htmlspecialchars($membro['nome']); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <button type="submit" name="add_member_to_project" class="btn btn-primary btn-block">Adicionar Membro ao Projeto</button>
@@ -311,8 +347,6 @@ function adicionarMembroAoProjeto($pdo, $id_projeto, $id_membro) {
     </div>
 
 
-
-
     <?php 
 
 
@@ -320,33 +354,36 @@ endif; ?>
 
     <!-- Atualização da exibição das tarefas no quadro Kanban -->
     <div class="kanban-board mt-5">
-        <?php
-        $status_columns = ['todo' => 'To Do', 'inprogress' => 'In Progress', 'done' => 'Done'];
-        foreach ($status_columns as $status => $title):
-        ?>
-            <div class="kanban-column" id="<?php echo $status; ?>">
-                <h4><?php echo $title; ?> <span class="badge badge-secondary"><?php echo count(array_filter($tarefas, function($t) use ($status) { return $t['status'] == $status; })); ?></span></h4>
-                <?php
-                foreach ($tarefas as $tarefa):
-                    if ($tarefa['status'] == $status):
-                ?>
-                    <div class="kanban-task" data-id="<?php echo $tarefa['id_tarefa']; ?>">
-                        <h5><?php echo htmlspecialchars($tarefa['nome']); ?></h5>
-                        <p><?php echo htmlspecialchars($tarefa['descricao']); ?></p>
-                        <p><small>Responsável: <?php echo htmlspecialchars($tarefa['membro_nome']); ?></small></p>
-                        <p><small>Dificuldade: <?php echo htmlspecialchars($tarefa['nivel_dificuldade']); ?></small></p>
-                        <p><small>Tempo Estimado: <?php echo htmlspecialchars($tarefa['tempo_estimado']); ?> minutos</small></p>
-                        
-                        <button class="btn btn-sm btn-info edit-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#editTaskModal">Editar</button>
-                        <button class="btn btn-sm btn-danger delete-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#deleteTaskModal">Deletar</button>
-                    </div>
-                <?php
-                    endif;
-                endforeach;
-                ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
+            <?php
+            $status_columns = ['todo' => 'To Do', 'inprogress' => 'In Progress', 'done' => 'Done'];
+            foreach ($status_columns as $status => $title):
+            ?>
+                <div class="kanban-column" id="<?php echo $status; ?>">
+                    <h4><?php echo $title; ?> <span class="badge badge-secondary"><?php echo count(array_filter($tarefas, function($t) use ($status) { return $t['status'] == $status; })); ?></span></h4>
+                    <?php
+                    foreach ($tarefas as $tarefa):
+                        if ($tarefa['status'] == $status):
+                    ?>
+                        <div class="kanban-task" data-id="<?php echo $tarefa['id_tarefa']; ?>">
+                            <h5><?php echo htmlspecialchars($tarefa['nome']); ?></h5>
+                            <p><?php echo htmlspecialchars($tarefa['descricao']); ?></p>
+                            <p>
+                                <img src="<?php echo htmlspecialchars($tarefa['membro_imagem'] ?? 'path/to/default/image.jpg'); ?>" alt="<?php echo htmlspecialchars($tarefa['membro_nome']); ?>" class="member-image">
+                                <small>Responsável: <?php echo htmlspecialchars($tarefa['membro_nome']); ?></small>
+                            </p>
+                            <p><small>Dificuldade: <?php echo htmlspecialchars($tarefa['nivel_dificuldade']); ?></small></p>
+                            <p><small>Tempo Estimado: <?php echo htmlspecialchars($tarefa['tempo_estimado']); ?> dias</small></p>
+                            
+                            <button class="btn btn-sm btn-info edit-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#editTaskModal">Editar</button>
+                            <button class="btn btn-sm btn-danger delete-task" data-id="<?php echo $tarefa['id_tarefa']; ?>" data-toggle="modal" data-target="#deleteTaskModal">Deletar</button>
+                        </div>
+                    <?php
+                        endif;
+                    endforeach;
+                    ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
     <!-- Atualização do Modal para Adicionar Tarefa -->
     <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
