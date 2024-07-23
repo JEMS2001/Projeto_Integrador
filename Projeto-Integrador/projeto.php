@@ -60,7 +60,7 @@ try {
                 ':data_fim' => $_POST['data_fim'],
                 ':status' => $_POST['status'],
                 ':banner_path' => $banner_path,
-                ':id_projeto' => $_POST['projeto_id'],
+                ':id_projeto' => $_POST['id_projeto'],
                 ':id_empresa' => $id_empresa
             ]);
         }
@@ -98,6 +98,11 @@ try {
                 die("Erro ao deletar projeto: " . $e->getMessage());
             }
         }
+
+        // Buscar projetos da empresa
+        $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim, status, banner_path FROM projeto WHERE id_empresa = :id_empresa");
+        $stmt->execute([':id_empresa' => $id_empresa]);
+        $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
         // Buscar id_membro
         $stmt = $pdo->prepare("SELECT id_membro FROM membro WHERE email = :email");
@@ -119,7 +124,6 @@ try {
     die("Erro na conexão: " . $e->getMessage());
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -275,18 +279,11 @@ try {
                         </div>
                     </div>
                 </div>
-
             <?php } ?>
 
             <!-- Cards de projetos -->
             <div class="row">
-                <?php
-
-                $stmt = $pdo->prepare("SELECT id_projeto, nome, tipo, data_inicio, data_fim, status, banner_path FROM projeto WHERE id_empresa = :id_empresa");
-                $stmt->execute([':id_empresa' => $id_empresa]);
-                $projetos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($projetos as $projeto) { ?>
+                <?php foreach ($projetos as $projeto) { ?>
                     <div class="col-md-4">
                         <div class="card">
                             <?php if ($projeto['banner_path']) { ?>
@@ -307,62 +304,62 @@ try {
                                         <input type="hidden" name="projeto_id" value="<?php echo $projeto['id_projeto']; ?>">
                                         <button type="submit" name="delete_project" class="btn btn-danger">Deletar</button>
                                     </form>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </div>
 
-                            <!-- Modal para editar projeto -->
-                            <div class="modal fade" id="editProjectModal<?php echo $projeto['id_projeto']; ?>" tabindex="-1" role="dialog" aria-labelledby="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>">Editar Projeto</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="POST" action="projeto.php" enctype="multipart/form-data">
-                                                <input type="hidden" name="id_projeto" value="<?php echo $projeto['id_projeto']; ?>">
-                                                <div class="form-group">
-                                                    <label for="nome_projeto">Nome do Projeto</label>
-                                                    <input type="text" class="form-control" id="nome_projeto<?php echo $projeto['id_projeto']; ?>" name="nome_projeto" value="<?php echo htmlspecialchars($projeto['nome']); ?>" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="tipo_projeto">Tipo do Projeto</label>
-                                                    <input type="text" class="form-control" id="tipo_projeto<?php echo $projeto['id_projeto']; ?>" name="tipo_projeto" value="<?php echo htmlspecialchars($projeto['tipo']); ?>" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="data_inicio">Data de Início</label>
-                                                    <input type="date" class="form-control" id="data_inicio<?php echo $projeto['id_projeto']; ?>" name="data_inicio" value="<?php echo $projeto['data_inicio']; ?>" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="data_fim">Data de Término</label>
-                                                    <input type="date" class="form-control" id="data_fim<?php echo $projeto['id_projeto']; ?>" name="data_fim" value="<?php echo $projeto['data_fim']; ?>" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="status">Status</label>
-                                                    <select class="form-control" id="status<?php echo $projeto['id_projeto']; ?>" name="status">
-                                                        <option value="No Prazo" <?php if ($projeto['status'] == 'No Prazo') echo 'selected'; ?>>No Prazo</option>
-                                                        <option value="Atrasado" <?php if ($projeto['status'] == 'Atrasado') echo 'selected'; ?>>Atrasado</option>
-                                                        <option value="Perto do Prazo" <?php if ($projeto['status'] == 'Perto do Prazo') echo 'selected'; ?>>Perto do Prazo</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="banner">Banner do Projeto</label>
-                                                    <input type="file" class="form-control-file" id="banner<?php echo $projeto['id_projeto']; ?>" name="banner" onchange="previewBanner(this, 'preview<?php echo $projeto['id_projeto']; ?>')">
-                                                </div>
-                                                <div class="form-group">
-                                                    <img id="preview<?php echo $projeto['id_projeto']; ?>" src="<?php echo htmlspecialchars($projeto['banner_path']); ?>" alt="Preview do Banner" style="max-width: 100%; height: auto;">
-                                                </div>
-                                                <button type="submit" name="edit_project" class="btn btn-primary btn-block">Salvar Alterações</button>
-                                            </form>
-                                        </div>
+                    <?php if ($tipo_usuario == 'empresa') { ?>
+                        <!-- Modal para editar projeto -->
+                        <div class="modal fade" id="editProjectModal<?php echo $projeto['id_projeto']; ?>" tabindex="-1" role="dialog" aria-labelledby="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editProjectModalLabel<?php echo $projeto['id_projeto']; ?>">Editar Projeto</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="projeto.php" enctype="multipart/form-data">
+                                            <input type="hidden" name="id_projeto" value="<?php echo $projeto['id_projeto']; ?>">
+                                            <div class="form-group">
+                                                <label for="nome_projeto<?php echo $projeto['id_projeto']; ?>">Nome do Projeto</label>
+                                                <input type="text" class="form-control" id="nome_projeto<?php echo $projeto['id_projeto']; ?>" name="nome_projeto" value="<?php echo htmlspecialchars($projeto['nome']); ?>" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="tipo_projeto<?php echo $projeto['id_projeto']; ?>">Tipo do Projeto</label>
+                                                <input type="text" class="form-control" id="tipo_projeto<?php echo $projeto['id_projeto']; ?>" name="tipo_projeto" value="<?php echo htmlspecialchars($projeto['tipo']); ?>" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="data_inicio<?php echo $projeto['id_projeto']; ?>">Data de Início</label>
+                                                <input type="date" class="form-control" id="data_inicio<?php echo $projeto['id_projeto']; ?>" name="data_inicio" value="<?php echo $projeto['data_inicio']; ?>" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="data_fim<?php echo $projeto['id_projeto']; ?>">Data de Término</label>
+                                                <input type="date" class="form-control" id="data_fim<?php echo $projeto['id_projeto']; ?>" name="data_fim" value="<?php echo $projeto['data_fim']; ?>" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="status<?php echo $projeto['id_projeto']; ?>">Status</label>
+                                                <select class="form-control" id="status<?php echo $projeto['id_projeto']; ?>" name="status">
+                                                    <option value="No Prazo" <?php if ($projeto['status'] == 'No Prazo') echo 'selected'; ?>>No Prazo</option>
+                                                    <option value="Atrasado" <?php if ($projeto['status'] == 'Atrasado') echo 'selected'; ?>>Atrasado</option>
+                                                    <option value="Perto do Prazo" <?php if ($projeto['status'] == 'Perto do Prazo') echo 'selected'; ?>>Perto do Prazo</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="banner<?php echo $projeto['id_projeto']; ?>">Banner do Projeto</label>
+                                                <input type="file" class="form-control-file" id="banner<?php echo $projeto['id_projeto']; ?>" name="banner">
+                                                <input type="hidden" name="current_banner" value="<?php echo htmlspecialchars($projeto['banner_path']); ?>">
+                                            </div>
+                                            <button type="submit" name="edit_project" class="btn btn-primary btn-block">Salvar Alterações</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
-                        <?php } ?>
                         </div>
-                    </div>
-                </div>
-            <?php } ?>
+                    <?php } ?>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -371,15 +368,27 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        function previewBanner(input, previewId) {
-            if (input.files && input.files[0]) {
+        $(document).ready(function() {
+            // Removendo a configuração que previne o fechamento dos modais ao clicar fora
+            // Isso pode estar causando os modais abrirem automaticamente
+
+            // Resetar o formulário ao fechar o modal
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('form').trigger('reset');
+            });
+
+            // Função para pré-visualização da imagem do banner
+            $('input[type="file"]').change(function(e) {
+                var file = e.target.files[0];
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById(previewId).src = e.target.result;
+                    var preview = $('<img>').attr('src', e.target.result);
+                    $(e.target).closest('.form-group').find('.banner-preview').html(preview);
                 };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+                reader.readAsDataURL(file);
+            });
+        });
+
     </script>
 </body>
 
