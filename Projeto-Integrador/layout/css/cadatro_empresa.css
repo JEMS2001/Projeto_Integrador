@@ -1,59 +1,98 @@
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-        }
-        .container {
-            max-width: 800px;
-        }
-        .form-container {
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            margin-top: 50px;
-        }
-        .form-title {
-            color: #007bff;
-            font-weight: bold;
-            margin-bottom: 40px;
-        }
-        .form-control {
-            border-radius: 10px;
-            padding: 12px;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-        }
-        .btn-custom {
-            background-color: #007bff;
-            border-color: #007bff;
-            color: white;
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        .btn-custom:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-            border-radius: 10px 0 0 10px;
-            width: 50px;
-            justify-content: center;
-        }
-        .animate-fade-in {
-            animation: fadeIn 1s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .form-group {
-            margin-bottom: 25px;
-        }
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+.registration-container {
+    display: flex;
+    flex-direction: row;
+    height: auto;
+    margin-bottom: 20px; /* Adicione um pouco de espaço abaixo do conteúdo */
+}
+
+.registration-form {
+    width: 50%;
+    padding: 40px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-background {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white; /* Adicione uma cor de fundo se desejar */
+}
+
+.login-background img {
+    max-width: 100%;
+    height: auto;
+}
+
+.registration-form h1 {
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.registration-form input[type="text"], 
+.registration-form input[type="email"], 
+.registration-form input[type="password"],
+.registration-form input[type="date"],
+.registration-form input[type="tel"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.registration-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
+}
+
+.registration-form button:hover {
+    background-color: #e89419;
+}
+
+.registration-form .form-group {
+    margin-bottom: 15px;
+}
+
+.registration-form label {
+    display: block;
+    margin-bottom: 5px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.registration-form .btn-get-started {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}

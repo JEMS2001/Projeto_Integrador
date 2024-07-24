@@ -19,19 +19,19 @@ body {
 }
 
 .container {
-    flex: 1; /* faz o conteúdo ocupar todo o espaço vertical disponível */
+    flex: 1; 
 }
 
 .content {
-    flex: 1; /* faz o conteúdo ocupar todo o espaço disponível */
-    padding: 20px; /* espaçamento interno */
-    margin-left: 250px; /* Ajuste para levar em conta a sidebar */
+    flex: 1; 
+    padding: 20px; 
+    margin-left: 250px; 
 }
 
 .login {
     padding: 20px;
-    margin: auto; /* centraliza o formulário na página */
-    max-width: 400px; /* largura máxima do formulário */
+    margin: auto; 
+    max-width: 400px; 
 }
 
 /* --------------------------Header----------------------------------------- */
@@ -368,11 +368,12 @@ header {
 
 /* --------------------------Footer----------------------------------------- */
 
-/* Estilos para o footer */
 footer {
-    background-color: #343a40; /* Cor de fundo escura */
-    color: #ffffff; /* Cor do texto branco */
-    padding: 1.5rem 0; /* Preenchimento interno */
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: 100px;
+    padding-top: 50px; /* Adiciona um padding extra na parte superior do footer */
 }
 
 footer p {

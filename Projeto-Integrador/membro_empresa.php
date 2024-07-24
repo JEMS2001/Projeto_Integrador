@@ -2,7 +2,7 @@
 session_start();
 include_once('config.php');
 
-if(!isset($_SESSION['email']) || empty($_SESSION['email'])) {
+if (!isset($_SESSION['email']) || empty($_SESSION['email'])) {
     unset($_SESSION['email']);
     unset($_SESSION['senha']);
     header('Location: login.php');
@@ -16,50 +16,89 @@ $id_empresa = $_SESSION['id_empresa'];
 
 $message = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cpf_membro'])) {
-    $cpf_membro = $_POST['cpf_membro'];
-
+function getConnection($servername, $dbname, $username, $password) {
     try {
         $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $sql = "SELECT id_membro FROM membro WHERE cpf = :cpf";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':cpf', $cpf_membro);
-        $stmt->execute();
-        $membro = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($membro) {
-            $sql_update = "UPDATE membro SET id_empresa = :id_empresa WHERE id_membro = :id_membro";
-            $stmt_update = $pdo->prepare($sql_update);
-            $stmt_update->bindParam(':id_empresa', $id_empresa);
-            $stmt_update->bindParam(':id_membro', $membro['id_membro']);
-            $stmt_update->execute();
-
-            $message = '<div class="alert alert-success">Membro adicionado à empresa com sucesso.</div>';
-        } else {
-            $message = '<div class="alert alert-danger">CPF de membro não encontrado.</div>';
-        }
-
-    } catch(PDOException $e) {
+        return $pdo;
+    } catch (PDOException $e) {
         die("Erro na conexão: " . $e->getMessage());
     }
 }
 
-// Fetch existing members
-$members = [];
-try {
-    $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+function getCompanyName($pdo, $id_empresa) {
+    $sql_empresa = "SELECT nome FROM empresa WHERE id_empresa = :id_empresa";
+    $stmt_empresa = $pdo->prepare($sql_empresa);
+    $stmt_empresa->bindParam(':id_empresa', $id_empresa);
+    $stmt_empresa->execute();
+    return $stmt_empresa->fetch(PDO::FETCH_ASSOC);
+}
 
+function checkExistingNotification($pdo, $id_empresa, $cpf_membro) {
+    $sql_check_notificacao = "SELECT * FROM notificacao WHERE id_empresa = :id_empresa AND cpf_membro = :cpf_membro";
+    $stmt_check_notificacao = $pdo->prepare($sql_check_notificacao);
+    $stmt_check_notificacao->bindParam(':id_empresa', $id_empresa);
+    $stmt_check_notificacao->bindParam(':cpf_membro', $cpf_membro);
+    $stmt_check_notificacao->execute();
+    return $stmt_check_notificacao->fetch(PDO::FETCH_ASSOC);
+}
+
+function insertNotification($pdo, $id_empresa, $nome_empresa, $cpf_membro) {
+    $sql_insert_notificacao = "INSERT INTO notificacao (id_empresa, nome, cpf_membro) VALUES (:id_empresa, :nome, :cpf_membro)";
+    $stmt_insert_notificacao = $pdo->prepare($sql_insert_notificacao);
+    $stmt_insert_notificacao->bindParam(':id_empresa', $id_empresa);
+    $stmt_insert_notificacao->bindParam(':nome', $nome_empresa);
+    $stmt_insert_notificacao->bindParam(':cpf_membro', $cpf_membro);
+    $stmt_insert_notificacao->execute();
+}
+
+function addMemberToCompany($pdo, $cpf_membro, $id_empresa) {
+    global $message;
+    
+    $empresa = getCompanyName($pdo, $id_empresa);
+    if (!$empresa) {
+        $message = '<div class="alert alert-danger">Empresa não encontrada.</div>';
+        return;
+    }
+    
+    $nome_empresa = $empresa['nome'];
+    
+    $sql_membro = "SELECT id_membro FROM membro WHERE cpf = :cpf";
+    $stmt_membro = $pdo->prepare($sql_membro);
+    $stmt_membro->bindParam(':cpf', $cpf_membro);
+    $stmt_membro->execute();
+    $membro = $stmt_membro->fetch(PDO::FETCH_ASSOC);
+
+    if ($membro) {
+        $notificacao_existente = checkExistingNotification($pdo, $id_empresa, $cpf_membro);
+
+        if ($notificacao_existente) {
+            $message = '<div class="alert alert-warning">Convite já foi feito para este membro.</div>';
+        } else {
+            insertNotification($pdo, $id_empresa, $nome_empresa, $cpf_membro);
+            $message = '<div class="alert alert-success">Notificação adicionada ao membro com sucesso.</div>';
+        }
+    } else {
+        $message = '<div class="alert alert-danger">CPF de membro não encontrado.</div>';
+    }
+}
+
+function getMembers($pdo, $id_empresa) {
     $sql = "SELECT * FROM membro WHERE id_empresa = :id_empresa";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':id_empresa', $id_empresa);
     $stmt->execute();
-    $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    die("Erro na conexão: " . $e->getMessage());
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+$pdo = getConnection($servername, $dbname, $username, $password);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cpf_membro'])) {
+    $cpf_membro = $_POST['cpf_membro'];
+    addMemberToCompany($pdo, $cpf_membro, $id_empresa);
+}
+
+$members = getMembers($pdo, $id_empresa);
 ?>
 
 <!DOCTYPE html>
@@ -75,77 +114,88 @@ try {
     <link rel="stylesheet" href="estilo.css">
     <title>Gerenciar Membros da Empresa</title>
     <style>
-    .sidebar {
-        width: 250px;
-        background: var(--primary-color);
-        color: var(--text-color);
-        position: fixed;
-        height: 100%;
-        padding-top: 60px;
-        left: 0;
-        transition: 0.3s;
-        z-index: 1000;
-    }
-    .sidebar a {
-        color: var(--text-color);
-        text-decoration: none;
-        padding: 15px;
-        display: block;
-        transition: 0.3s;
-    }
-    .sidebar a:hover {
-        background: var(--secondary-color);
-    }
-    .content {
-        margin-left: 250px;
-        transition: 0.3s;
-    }
-    .card {
-        border-radius: 15px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
-    }
-    .card:hover {
-        transform: scale(1.05);
-    }
-    #sidebar-toggle {
-        position: fixed;
-        left: 10px;
-        top: 10px;
-        z-index: 1001;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 5px;
-        display: none; /* Esconder o botão por padrão */
-    }
-    @media (max-width: 768px) {
         .sidebar {
-            left: -250px;
-        }
-        .sidebar.active {
+            width: 250px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            position: fixed;
+            height: 100%;
+            padding-top: 60px;
             left: 0;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 15px;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            background: var(--secondary-color);
         }
         .content {
-            margin-left: 0;
-        }
-        .content.active {
             margin-left: 250px;
+            transition: 0.3s;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.05);
         }
         #sidebar-toggle {
-            display: block; /* Mostrar o botão em telas menores */
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
         }
-    }
-    .member-list {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-</style>
-
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .content {
+                margin-left: 0;
+            }
+            .content.active {
+                margin-left: 250px;
+            }
+            #sidebar-toggle {
+                display: block;
+            }
+        }
+        .member-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .member-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .fa-user-circle {
+            font-size: 40px;
+            color: #ccc;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    
+
 <div class="sidebar" id="sidebar">
     <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
         <i class="fas fa-code me-2"></i>JFHK
@@ -157,13 +207,15 @@ try {
         <i class="fas fa-user me-1"></i>Perfil
     </a>
     <?php if ($tabela == 'empresa') { ?>
-    <a href="membro_empresa.php">
-        <i class="fas fa-users me-1"></i>Membros
-    </a>
+        <a href="membro_empresa.php">
+            <i class="fas fa-users me-1"></i>Membros
+        </a>
     <?php } ?>
-    <a href="#">
-        <i class="fas fa-chart-bar me-1"></i>Relatórios
-    </a>
+    <?php if ($tabela == 'empresa') { ?>
+        <a href="monitoramento.php">
+            <i class="fas fa-chart-bar me-1"></i>Relatórios
+        </a>
+    <?php } ?>
     <a href="sair.php" class="btn btn-danger mt-auto">
         <i class="fas fa-sign-out-alt me-1"></i>Sair
     </a>
@@ -203,9 +255,13 @@ try {
                         <h2 class="card-title text-center"><i class="fas fa-users me-2"></i>Membros Atuais</h2>
                         <ul class="list-group member-list">
                             <?php foreach ($members as $member): ?>
-                                <li class="list-group-item">
-                                    <i class="fas fa-user me-2"></i>
-                                    <?php echo htmlspecialchars($member['nome']); ?> (<?php echo htmlspecialchars($member['cpf']); ?>)
+                                <li class="list-group-item d-flex align-items-center">
+                                    <?php if (!empty($member['imagem'])): ?>
+                                        <img src="<?= htmlspecialchars($member['imagem']) ?>" alt="Foto membro" class="member-image">
+                                    <?php else: ?>
+                                        <i class="fas fa-user-circle member-image"></i>
+                                    <?php endif; ?>
+                                    <span><?php echo htmlspecialchars($member['nome']); ?> (<?php echo htmlspecialchars($member['cpf']); ?>)</span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -221,7 +277,6 @@ try {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Adicionar a classe active à sidebar por padrão em telas maiores
         function checkWindowSize() {
             if ($(window).width() > 768) {
                 $("#sidebar").addClass("active");
@@ -234,20 +289,16 @@ try {
             }
         }
 
-        // Verificar o tamanho da janela ao carregar a página
         checkWindowSize();
 
-        // Verificar o tamanho da janela ao redimensionar a janela
         $(window).resize(checkWindowSize);
 
-        // Alternar a sidebar ao clicar no botão
         $("#sidebar-toggle").click(function(e) {
             e.preventDefault();
             $("#sidebar").toggleClass("active");
             $("#content").toggleClass("active");
         });
 
-        // Aplicar máscara ao campo CPF
         $('#cpf_membro').mask('000.000.000-00');
     });
 </script>

@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+
 if (isset($_SESSION['email'])) {
     header("Location: dashboard.php");
     exit;
@@ -8,7 +9,7 @@ if (isset($_SESSION['email'])) {
 ?>
 
 <?php
-include_once('config.php');
+include('config.php');
 $mensagem = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -20,22 +21,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = $_POST['email'];
         $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT); // Use password hashing
 
-        $sql = "INSERT INTO membro(nome, data_nascimento, telefone, cpf, email, senha) VALUES (:nome, :data_nascimento, :telefone, :cpf, :email, :senha)";
+        // Verificar se o CPF já existe no banco de dados
+        $sql = "SELECT COUNT(*) FROM membro WHERE cpf = :cpf";
         $stmt = $pdo->prepare($sql);
-
-        $stmt->bindParam(':nome', $nome);
-        $stmt->bindParam(':data_nascimento', $data_nascimento);
-        $stmt->bindParam(':telefone', $telefone);
         $stmt->bindParam(':cpf', $cpf);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':senha', $senha);
+        $stmt->execute();
+        $cpfCount = $stmt->fetchColumn();
 
-        if ($stmt->execute()) {
-            $mensagem = "Membro cadastrado com sucesso.";
-            header("Location: home.php");
-            exit();
+        if ($cpfCount > 0) {
+            $mensagem = "CPF já cadastrado. Por favor, use outro CPF.";
         } else {
-            $mensagem = "Erro ao cadastrar membro: " . $stmt->errorInfo()[2];
+            $sql = "INSERT INTO membro(nome, data_nascimento, telefone, cpf, email, senha) VALUES (:nome, :data_nascimento, :telefone, :cpf, :email, :senha)";
+            $stmt = $pdo->prepare($sql);
+
+            $stmt->bindParam(':nome', $nome);
+            $stmt->bindParam(':data_nascimento', $data_nascimento);
+            $stmt->bindParam(':telefone', $telefone);
+            $stmt->bindParam(':cpf', $cpf);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':senha', $senha);
+
+            if ($stmt->execute()) {
+                $mensagem = "Membro cadastrado com sucesso.";
+                header("Location: home.php");
+                exit();
+            } else {
+                $mensagem = "Erro ao cadastrar membro: " . $stmt->errorInfo()[2];
+            }
         }
     } else {
         $mensagem = "Todos os campos do formulário devem ser preenchidos.";
@@ -46,112 +58,103 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php include 'layout/header.php'; ?>
 
 <style>
-.registration-container {
-    display: flex;
-    height: 100vh;
-}
+    /* Ajustes para espaçamento */
+    .text-center {
+        margin-top: 20px; 
+    }
 
-.registration-form {
-    width: 50%;
-    padding: 40px;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+    .navbar {
+        margin-bottom: 30px; 
+        padding-bottom: 20px; 
+    }
 
-.login-background {
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white; /* Adicione uma cor de fundo se desejar */
-}
+    .registration-container {
+        display: flex;
+        height: auto; /* Permite que o container cresça com o conteúdo */
+        align-items: center;
+        margin-bottom: 100px; /* Espaço reduzido antes do footer */
+    }
 
-.login-background img {
-    max-width: 100%;
-    height: auto;
-}
-.registration-form h1 {
-    margin-bottom: 20px;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .registration-form {
+        width: 50%;
+        padding: 40px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-.registration-form input[type="text"], 
-.registration-form input[type="email"], 
-.registration-form input[type="password"],
-.registration-form input[type="date"],
-.registration-form input[type="tel"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .login-background {
+        width: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+    }
 
-.registration-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
-}
+    .login-background img {
+        max-width: 100%;
+        height: auto;
+    }
 
-.registration-form button:hover {
-    background-color: #e89419;
-}
+    .registration-form h1 {
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 
-.registration-form .form-group {
-    margin-bottom: 15px;
-}
+    .registration-form input[type="text"], 
+    .registration-form input[type="email"], 
+    .registration-form input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 
-.registration-form label {
-    display: block;
-    margin-bottom: 5px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .registration-form button {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
+    }
 
-.registration-form .btn-get-started {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-}
+    .registration-form button:hover {
+        background-color: #e89419;
+    }
 
-.registration-form .btn-get-started:hover {
-    background-color: #e89419;
-}
+    .registration-form .form-group {
+        margin-bottom: 15px;
+    }
 
-.registration-form .btn-learn-more {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-}
+    .registration-form label {
+        display: block;
+        margin-bottom: 5px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 
-.registration-form .btn-learn-more:hover {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-}
-
-.password-hint {
-    font-size: 0.9em;
-    color: #888;
-    margin-top: -10px;
-    margin-bottom: 15px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.5s, transform 0.5s;
-}
+    .password-hint {
+        font-size: 0.9em;
+        color: #888;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
@@ -161,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="registration-form">
             <h1 class="text-center mb-4">Cadastro de Membro</h1>
             <?php if (!empty($mensagem)): ?>
-                <div class="alert <?php echo ($stmt && $stmt->execute()) ? 'alert-success' : 'alert-danger'; ?>" role="alert">
+                <div class="alert alert-danger" role="alert">
                     <?php echo $mensagem; ?>
                 </div>
             <?php endif; ?>
@@ -200,7 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <div class="login-background">
             <div class="hero-img mt-5" data-aos="zoom-in" data-aos-delay="200">
-                <img src="img\hero\5024147.jpg" class="img-fluid" alt="Dashboard">
+                <img src="img/hero/5024147.jpg" class="img-fluid" alt="Dashboard">
             </div>
         </div>
     </div>
