@@ -1,7 +1,7 @@
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    cnpj VARCHAR(20) NOT NULL,
+    cnpj VARCHAR(20) NOT NULL UNIQUE,
     endereco VARCHAR(255),
     email VARCHAR(100) NOT NULL,
     senha VARCHAR(255) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE membro (
     nome VARCHAR(100) NOT NULL,
     data_nascimento DATE NOT NULL,
     telefone VARCHAR(20),
-    cpf VARCHAR(14) NOT NULL,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     id_empresa INT,
@@ -35,7 +35,7 @@ CREATE TABLE projeto (
     data_inicio DATE NOT NULL,
     data_fim DATE,
     id_empresa INT,
-    banner VARCHAR(255),
+    banner_path VARCHAR(255),
     status VARCHAR(20) DEFAULT 'no prazo',
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
