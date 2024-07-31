@@ -1,3 +1,105 @@
+<?php
+session_start();
+include_once('config.php');
+
+if (!isset($_SESSION['email']) || empty($_SESSION['email'])) {
+    unset($_SESSION['email']);
+    unset($_SESSION['senha']);
+    header('Location: login.php');
+    exit;
+}
+
+$tabela = $_SESSION['tipo_usuario'];
+$logado = $_SESSION['email'];
+$tipo_usuario = $_SESSION['tipo_usuario'];
+$id_empresa = $_SESSION['id_empresa'];
+
+$message = '';
+
+function getConnection($servername, $dbname, $username, $password) {
+    try {
+        $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("Erro na conexão: " . $e->getMessage());
+    }
+}
+
+function getCompanyName($pdo, $id_empresa) {
+    $sql_empresa = "SELECT nome FROM empresa WHERE id_empresa = :id_empresa";
+    $stmt_empresa = $pdo->prepare($sql_empresa);
+    $stmt_empresa->bindParam(':id_empresa', $id_empresa);
+    $stmt_empresa->execute();
+    return $stmt_empresa->fetch(PDO::FETCH_ASSOC);
+}
+
+function checkExistingNotification($pdo, $id_empresa, $cpf_membro) {
+    $sql_check_notificacao = "SELECT * FROM notificacao WHERE id_empresa = :id_empresa AND cpf_membro = :cpf_membro";
+    $stmt_check_notificacao = $pdo->prepare($sql_check_notificacao);
+    $stmt_check_notificacao->bindParam(':id_empresa', $id_empresa);
+    $stmt_check_notificacao->bindParam(':cpf_membro', $cpf_membro);
+    $stmt_check_notificacao->execute();
+    return $stmt_check_notificacao->fetch(PDO::FETCH_ASSOC);
+}
+
+function insertNotification($pdo, $id_empresa, $nome_empresa, $cpf_membro) {
+    $sql_insert_notificacao = "INSERT INTO notificacao (id_empresa, nome, cpf_membro) VALUES (:id_empresa, :nome, :cpf_membro)";
+    $stmt_insert_notificacao = $pdo->prepare($sql_insert_notificacao);
+    $stmt_insert_notificacao->bindParam(':id_empresa', $id_empresa);
+    $stmt_insert_notificacao->bindParam(':nome', $nome_empresa);
+    $stmt_insert_notificacao->bindParam(':cpf_membro', $cpf_membro);
+    $stmt_insert_notificacao->execute();
+}
+
+function addMemberToCompany($pdo, $cpf_membro, $id_empresa) {
+    global $message;
+    
+    $empresa = getCompanyName($pdo, $id_empresa);
+    if (!$empresa) {
+        $message = '<div class="alert alert-danger">Empresa não encontrada.</div>';
+        return;
+    }
+    
+    $nome_empresa = $empresa['nome'];
+    
+    $sql_membro = "SELECT id_membro FROM membro WHERE cpf = :cpf";
+    $stmt_membro = $pdo->prepare($sql_membro);
+    $stmt_membro->bindParam(':cpf', $cpf_membro);
+    $stmt_membro->execute();
+    $membro = $stmt_membro->fetch(PDO::FETCH_ASSOC);
+
+    if ($membro) {
+        $notificacao_existente = checkExistingNotification($pdo, $id_empresa, $cpf_membro);
+
+        if ($notificacao_existente) {
+            $message = '<div class="alert alert-warning">Convite já foi feito para este membro.</div>';
+        } else {
+            insertNotification($pdo, $id_empresa, $nome_empresa, $cpf_membro);
+            $message = '<div class="alert alert-success">Notificação adicionada ao membro com sucesso.</div>';
+        }
+    } else {
+        $message = '<div class="alert alert-danger">CPF de membro não encontrado.</div>';
+    }
+}
+
+function getMembers($pdo, $id_empresa) {
+    $sql = "SELECT * FROM membro WHERE id_empresa = :id_empresa";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':id_empresa', $id_empresa);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$pdo = getConnection($servername, $dbname, $username, $password);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cpf_membro'])) {
+    $cpf_membro = $_POST['cpf_membro'];
+    addMemberToCompany($pdo, $cpf_membro, $id_empresa);
+}
+
+$members = getMembers($pdo, $id_empresa);
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,14 +126,23 @@
             padding-top: 20px;
             z-index: 1000;
         }
+
+        .header-title {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            text-align: center; 
+            margin-top: 50px; 
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+<div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
             <i class="fas fa-code me-2"></i>JFHK
         </a>
+
         <a href="projeto.php">
             <i class="fas fa-project-diagram me-1"></i>Projetos
         </a>
@@ -42,13 +153,18 @@
             <a href="membro_empresa.php">
                 <i class="fas fa-users me-1"></i>Membros
             </a>
-        <?php } ?>
-        <?php if ($tabela == 'empresa') { ?>
+        
             <a href="monitoramento.php">
                 <i class="fas fa-chart-bar me-1"></i>Relatórios
             </a>
+            <?php }else{ ?>
+
+            <a class="nav-link" href="notificacao.php">
+                <i class="fas fa-users me-1"></i>Notificações
+            </a>
+
         <?php } ?>
-        <a href="dynamic-full-calendar.html">
+        <a href="dynamic-full-calendar.php">
             <i class="fas fa-calendar-alt me-1"></i>Calendário
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">
@@ -59,9 +175,10 @@
 <div class="container">
     <div class="row">
         <div class="col-lg-12">
-            <h5 align="center">Calendário de Eventos</h5>
+            <h3 class="header-title">Calendário de Eventos</h3>
             <!-- Botões para adicionar, editar e excluir eventos -->
             <button class="btn btn-primary" data-toggle="modal" data-target="#event_entry_modal">Adicionar Evento</button>
+            <br><br>
             <button class="btn btn-warning" id="edit_event_button" style="display:none;" data-toggle="modal" data-target="#event_edit_modal">Editar Evento</button>
             <button class="btn btn-danger" id="delete_event_button" style="display:none;">Excluir Evento</button>
             <div id="calendar"></div>

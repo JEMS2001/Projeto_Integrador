@@ -95,13 +95,27 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="estilo.css">
+
+    <style>
+        .sidebar {
+            background-color: var(--secondary-color);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+    </style>
     <title>Notificações</title>
 </head>
-<body>
+<body>   
 <div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
             <i class="fas fa-code me-2"></i>JFHK
         </a>
+
         <a href="projeto.php">
             <i class="fas fa-project-diagram me-1"></i>Projetos
         </a>
@@ -109,18 +123,21 @@ try {
             <i class="fas fa-user me-1"></i>Perfil
         </a>
         <?php if ($tabela == 'empresa') { ?>
-        <a href="membro_empresa.php">
-            <i class="fas fa-users me-1"></i>Membros
-        </a>
-        <?php }else{ ?>
-            
-                <a class="nav-link" href="notificacao.php">
-                    <i class="fas fa-users me-1"></i>Notificações
-                </a>
-            
+            <a href="membro_empresa.php">
+                <i class="fas fa-users me-1"></i>Membros
+            </a>
+            <a href="monitoramento.php">
+                <i class="fas fa-chart-bar me-1"></i>Relatórios
+            </a>
+            <?php }else{ ?>
+
+            <a class="nav-link" href="notificacao.php">
+                <i class="fas fa-users me-1"></i>Notificações
+            </a>
+
         <?php } ?>
-        <a href="monitoramento.php">
-            <i class="fas fa-chart-bar me-1"></i>Relatórios
+        <a href="dynamic-full-calendar.php">
+            <i class="fas fa-calendar-alt me-1"></i>Calendário
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">
             <i class="fas fa-sign-out-alt me-1"></i>Sair
@@ -145,9 +162,11 @@ try {
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="col-12">
+            <div class="container d-flex justify-content-center align-items-center">
+                <div class="col-8">
                     <div class="alert alert-info text-center">Nenhuma notificação encontrada.</div>
                 </div>
+            </div>
             <?php endif; ?>
         </div>
     </div>

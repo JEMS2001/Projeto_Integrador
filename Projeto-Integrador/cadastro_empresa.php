@@ -58,6 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     display: flex;
     height: 100vh;
     align-items: center; /* Centraliza verticalmente */
+    margin: 20px;
 }
 
 .registration-form {
@@ -145,10 +146,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     max-width: 100%;
     height: auto;
 }
+
+/* Adiciona um espaço em branco antes do footer */
+.spacer {
+    height: 50px; /* Ajuste a altura conforme necessário */
+}
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-
 
 <div class="container">
     <div class="registration-container">
@@ -194,6 +199,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+    <div class="spacer"></div> <!-- Espaço em branco adicionado -->
 </div>
 
 <script src="https://unpkg.com/imask"></script>

@@ -115,14 +115,13 @@ $members = getMembers($pdo, $id_empresa);
     <title>Gerenciar Membros da Empresa</title>
     <style>
         .sidebar {
-            width: 250px;
-            background: var(--primary-color);
-            color: var(--text-color);
+            background-color: var(--secondary-color);
+            height: 100vh;
             position: fixed;
-            height: 100%;
-            padding-top: 60px;
             left: 0;
-            transition: 0.3s;
+            top: 0;
+            width: 250px;
+            padding-top: 20px;
             z-index: 1000;
         }
         .sidebar a {
@@ -196,31 +195,38 @@ $members = getMembers($pdo, $id_empresa);
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-    <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
-        <i class="fas fa-code me-2"></i>JFHK
-    </a>
-    <a href="projeto.php">
-        <i class="fas fa-project-diagram me-1"></i>Projetos
-    </a>
-    <a href="perfil.php">
-        <i class="fas fa-user me-1"></i>Perfil
-    </a>
-    <?php if ($tabela == 'empresa') { ?>
-        <a href="membro_empresa.php">
-            <i class="fas fa-users me-1"></i>Membros
+<div class="sidebar">
+        <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
+            <i class="fas fa-code me-2"></i>JFHK
         </a>
-    <?php } ?>
-    <?php if ($tabela == 'empresa') { ?>
-        <a href="monitoramento.php">
-            <i class="fas fa-chart-bar me-1"></i>Relatórios
-        </a>
-    <?php } ?>
-    <a href="sair.php" class="btn btn-danger mt-auto">
-        <i class="fas fa-sign-out-alt me-1"></i>Sair
-    </a>
-</div>
 
+        <a href="projeto.php">
+            <i class="fas fa-project-diagram me-1"></i>Projetos
+        </a>
+        <a href="perfil.php">
+            <i class="fas fa-user me-1"></i>Perfil
+        </a>
+        <?php if ($tabela == 'empresa') { ?>
+            <a href="membro_empresa.php">
+                <i class="fas fa-users me-1"></i>Membros
+            </a>
+            <a href="monitoramento.php">
+                <i class="fas fa-chart-bar me-1"></i>Relatórios
+            </a>
+            <?php }else{ ?>
+
+            <a class="nav-link" href="notificacao.php">
+                <i class="fas fa-users me-1"></i>Notificações
+            </a>
+
+        <?php } ?>
+        <a href="dynamic-full-calendar.php">
+            <i class="fas fa-calendar-alt me-1"></i>Calendário
+        </a>
+        <a href="sair.php" class="btn btn-danger mt-auto">
+            <i class="fas fa-sign-out-alt me-1"></i>Sair
+        </a>
+    </div>
 <button id="sidebar-toggle" class="btn btn-primary">
     <i class="fas fa-bars"></i>
 </button>
