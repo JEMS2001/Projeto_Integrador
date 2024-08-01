@@ -1,95 +1,106 @@
-# Projeto Integrador de Sistema de Cadastro de Empresa e Controle de Reuniões
+# Sistema Integrado de Gestão Empresarial e Projetos
 
-Este é um projeto de sistema integrador desenvolvido com PHP e MariaDB, que inclui funcionalidades de cadastro de empresa, gerenciamento de membros, projetos e tarefas, bem como um calendário para marcação de reuniões. O sistema também possui funcionalidades de login e recuperação de senha.
+Este é um sistema web completo desenvolvido com PHP e MariaDB, oferecendo funcionalidades abrangentes para cadastro de empresas, gerenciamento de membros, projetos, tarefas e reuniões. O sistema inclui recursos avançados de autenticação, controle de sessão e notificações.
 
-## Funcionalidades
+## Funcionalidades Principais
 
-1. **Cadastro de Empresa**:
-   - Sistema de cadastro de empresas com verificação de CNPJ único.
+1. **Gestão de Empresas e Membros**:
+   - Cadastro detalhado de empresas com validação de CNPJ.
+   - Registro de membros com informações pessoais e profissionais.
+   - Associação de membros a empresas.
 
-2. **Gerenciamento de Membros e Projetos**:
-   - Cadastro de membros.
-   - Criação de projetos.
-   - Associação de membros aos projetos.
-   - Gerenciamento de tarefas dentro dos projetos.
+2. **Gerenciamento de Projetos e Tarefas**:
+   - Criação e acompanhamento de projetos com datas e status.
+   - Sistema de tarefas com níveis de dificuldade e estimativas de tempo.
+   - Acompanhamento de progresso das tarefas.
 
-3. **Sistema de Login e Recuperação de Senha**:
-   - Login para empresas e membros.
-   - Sistema de recuperação de senha via e-mail.
+3. **Calendário e Eventos**:
+   - Agendamento de reuniões e eventos.
+   - Visualização em calendário integrado.
 
-4. **Calendário de Reuniões**:
-   - Marcação de reuniões.
-   - Destaque de reuniões no calendário.
-   - Notificação por e-mail 24 horas antes das reuniões.
+4. **Sistema de Autenticação e Segurança**:
+   - Login seguro para empresas e membros.
+   - Recuperação de senha via e-mail.
+   - Controle de sessões de usuários.
+
+5. **Notificações e Atualizações**:
+   - Sistema de notificações para empresas e membros.
+   - Acompanhamento de alterações em tarefas e projetos.
 
 ## Tecnologias Utilizadas
 
 - **Frontend**:
-  - HTML/CSS
-  - JavaScript
-  - Bootstrap
-
+  - HTML5 e CSS3
+  - JavaScript (ES6+)
+  - Bootstrap 5
 - **Backend**:
-  - PHP
-  - PDO para conexão com o banco de dados
+  - PHP 8.0+
+  - MariaDB 10.5+
+- **Ferramentas Adicionais**:
+  - Composer para gerenciamento de dependências
+  - PHPMailer para envio de e-mails
 
-## Estrutura do Projeto
-
-- `config.php`: Arquivo de configuração de conexão com o banco de dados.
-- `login.php`: Página de login com recuperação de senha.
-- `register.php`: Página de cadastro de empresa e membros.
-- `dashboard.php`: Página inicial após o login, com acesso ao calendário de reuniões..
-- `assets/`: Diretório para arquivos CSS, JS e imagens.
-- `sql/`: Diretório com o script SQL para criação das tabelas no banco de dados.
-
-## Instruções de Instalação
+## Instalação e Configuração
 
 ### Pré-requisitos
+- Servidor Web (Apache 2.4+ ou Nginx)
+- PHP 8.0+
+- MariaDB 10.5+
 
-- Servidor Web (Apache, Nginx, etc.)
-- PHP 7.4+
-- MariaDB
-- Composer (para gerenciamento de dependências PHP)
+### Passos para Instalação
 
-### Passo a Passo
+1. Clone o repositório:
+   ```
+   git clone https://github.com/seu-usuario/nome-do-projeto.git
+   ```
 
- **Configurar o Banco de Dados**:
+2. Configure o banco de dados:
    - Crie um banco de dados no MariaDB.
-   - Importe o script `sql/database.sql` para criar as tabelas.
-   - Configure as credenciais do banco de dados em `config.php`.
+   - Importe o schema do SQL fornecido abaixo.
+     
+3. Acesse o sistema pelo navegador e siga as instruções de configuração inicial.
 
- **Configurar o Servidor Web**:
-   - Aponte o diretório raiz do servidor web para o diretório do projeto.
-   - Certifique-se de que o servidor web tenha permissão para acessar os arquivos do projeto.
-
- **Executar o Projeto**:
-   - Acesse o sistema através do navegador.
-
-## Scripts SQL
-
-### Criação das Tabelas
+## SQL para Criação das Tabelas
 
 ```sql
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    cnpj VARCHAR(18) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL,
-    senha VARCHAR(255) NOT NULL
+    nome VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20) NOT NULL UNIQUE,
+    endereco VARCHAR(255),
+    email VARCHAR(100) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    imagem VARCHAR(400),
+    CONSTRAINT chk_cnpj_empresa CHECK (cnpj REGEXP '^[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2}$'),
+    CONSTRAINT chk_email_empresa CHECK (email LIKE '%_@__%.__%')
 );
 
 CREATE TABLE membro (
     id_membro INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    senha VARCHAR(255) NOT NULL
+    nome VARCHAR(100) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    telefone VARCHAR(20),
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    id_empresa INT,
+    imagem VARCHAR(400),
+    esta_logado BOOLEAN DEFAULT FALSE,
+    ultimo_login DATETIME,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa),
+    CONSTRAINT chk_cpf_membro CHECK (cpf REGEXP '^[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]{2}$'),
+    CONSTRAINT chk_email_membro CHECK (email LIKE '%_@__%.__%')
 );
 
 CREATE TABLE projeto (
     id_projeto INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    descricao TEXT,
+    nome VARCHAR(100) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    data_inicio DATE NOT NULL,
+    data_fim DATE,
     id_empresa INT,
+    banner_path VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'no prazo',
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
@@ -103,21 +114,68 @@ CREATE TABLE membro_projeto (
 
 CREATE TABLE tarefa (
     id_tarefa INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    descricao TEXT,
-    status VARCHAR(50),
+    nome VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
+    status VARCHAR(100) NOT NULL,
+    nivel_dificuldade ENUM('Fácil', 'Médio', 'Difícil') NOT NULL,
+    tempo_estimado INT NOT NULL COMMENT 'Tempo estimado em dias',
+    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_conclusao DATETIME,
+    id_membro INT,
     id_projeto INT,
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro),
     FOREIGN KEY (id_projeto) REFERENCES projeto(id_projeto)
 );
 
-CREATE TABLE reuniao (
-    id_reuniao INT AUTO_INCREMENT PRIMARY KEY,
-    titulo VARCHAR(255) NOT NULL,
-    descricao TEXT,
-    data_hora DATETIME NOT NULL,
-    id_empresa INT,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+CREATE TABLE progresso_tarefa (
+    id_progresso INT AUTO_INCREMENT PRIMARY KEY,
+    id_tarefa INT,
+    id_membro INT,
+    status_anterior VARCHAR(100) NOT NULL,
+    status_novo VARCHAR(100) NOT NULL,
+    tempo_gasto INT COMMENT 'Tempo gasto em dias',
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_tarefa) REFERENCES tarefa(id_tarefa),
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro)
 );
+
+CREATE TABLE sessao_usuario (
+    id_sessao INT AUTO_INCREMENT PRIMARY KEY,
+    id_membro INT,
+    data_inicio DATETIME NOT NULL,
+    data_fim DATETIME,
+    duracao_segundos INT,
+    FOREIGN KEY (id_membro) REFERENCES membro(id_membro)
+);
+
+CREATE TABLE calendar_event_master (
+  event_id int NOT NULL,
+  event_name varchar(255) NOT NULL,
+  event_start_time time NOT NULL,
+  event_end_time time NOT NULL,
+  event_platform varchar(255) NOT NULL,
+  event_date date NOT NULL
+);
+
+CREATE TABLE notificacao(
+    id_notificacao INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT,
+    nome VARCHAR(100),
+    cpf_membro VARCHAR(14),
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa),
+    FOREIGN KEY (cpf_membro) REFERENCES membro(cpf)
+);
+
+-- Índices para melhorar o desempenho
+CREATE INDEX idx_membro_data ON sessao_usuario (id_membro, data_inicio);
+CREATE INDEX idx_tarefa_status ON tarefa (status);
+CREATE INDEX idx_progresso_tarefa ON progresso_tarefa (id_tarefa, data_atualizacao);
+
+-- Constraint adicional
+ALTER TABLE membro
+ADD CONSTRAINT unique_cpf UNIQUE (cpf);
 ```
 
-Este README fornece uma visão geral abrangente do projeto, incluindo suas funcionalidades, tecnologias utilizadas, estrutura, instruções de instalação, scripts SQL, e diretrizes de contribuição.
+## Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
