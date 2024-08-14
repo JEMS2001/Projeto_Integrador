@@ -10,8 +10,49 @@ if(isset($_SESSION['email'])) {
 
 <?php include 'layout/header.php'; ?>
 
-<link href="layout/css/cadastro.css" rel="stylesheet">
+
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+.btn-custom {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+    transition: all 0.3s ease;
+}
+.btn-custom:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+.card-icon {
+    font-size: 4rem;
+    color: #007bff;
+}
+.side-image {
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+}
+.animate-fade-in {
+    animation: fadeIn 1s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 
 <div class="container my-5">
     <h1 class="text-center mb-5 animate-fade-in">Escolha o tipo de cadastro</h1>
@@ -40,9 +81,6 @@ if(isset($_SESSION['email'])) {
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row justify-content-center align-items-center mt-5">
-    
     </div>
 </div>
 
