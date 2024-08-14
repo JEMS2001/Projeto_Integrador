@@ -1,13 +1,5 @@
 from email.mime.image import MIMEImage
 import pandas as pd
-import smtplib
-import io
-import matplotlib.pyplot as plt
-import seaborn as sns
-# Remove the import statement
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-import smtplib
 import io
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
@@ -29,7 +21,14 @@ class GerenciadorRelatorios:
         self.enviador = enviador_email
 
     def gerar_e_enviar_relatorios(self, periodo='semanal'):
-        empresas = self.gerador.obter_empresas()
+        try:
+            empresas = self.gerador.obter_empresas()
+            if empresas.empty:
+                print("Nenhuma empresa encontrada para gerar relatórios.")
+                return
+        except Exception as e:
+            print(f"Erro ao obter empresas: {str(e)}")
+            return
         
         if periodo == 'semanal':
             data_fim = datetime.now().date()
@@ -43,32 +42,43 @@ class GerenciadorRelatorios:
             nome_empresa = empresa['nome']
             email_empresa = empresa['email']
             
-            # Gerar relatórios específicos para a empresa
-            df_projetos = self.gerador.relatorio_projetos(id_empresa, data_inicio, data_fim)
-            df_desempenho = self.gerador.relatorio_desempenho_membros(id_empresa, data_inicio, data_fim)
-            df_uso = self.gerador.relatorio_uso_sistema(id_empresa, data_inicio, data_fim)
+            try:
+                # Gerar relatórios específicos para a empresa
+                df_projetos = self.gerador.relatorio_projetos(id_empresa, data_inicio, data_fim)
+                df_desempenho = self.gerador.relatorio_desempenho_membros(id_empresa, data_inicio, data_fim)
+                df_uso = self.gerador.relatorio_uso_sistema(id_empresa, data_inicio, data_fim)
+                
+                # Verificar se algum dos DataFrames está vazio
+                if df_projetos.empty and df_desempenho.empty and df_uso.empty:
+                    print(f"Nenhum dado encontrado para a empresa {nome_empresa}. Relatório não será gerado.")
+                    continue
+                
+                # Criar visualizações
+                graficos = self._criar_visualizacoes(df_projetos, df_desempenho, df_uso)
+                
+                # Criar planilha Excel com múltiplas abas
+                excel_buffer = self._criar_excel([
+                    ('Projetos', df_projetos),
+                    ('Desempenho', df_desempenho),
+                    ('Uso do Sistema', df_uso)
+                ])
+                
+                # Criar corpo do e-mail
+                corpo_email = self._criar_corpo_email(nome_empresa, periodo, data_inicio, data_fim, graficos)
+                
+                # Enviar e-mail
+                self.enviador.enviar_email(
+                    email_empresa,
+                    f"Relatório {periodo.capitalize()} da Empresa {nome_empresa} - {data_inicio.strftime('%d/%m/%Y')} a {data_fim.strftime('%d/%m/%Y')}",
+                    corpo_email,
+                    excel_buffer,
+                    graficos
+                )
+                
+                print(f"Relatório gerado e enviado com sucesso para a empresa {nome_empresa}")
             
-            # Criar visualizações
-            graficos = self._criar_visualizacoes(df_projetos, df_desempenho, df_uso)
-            
-            # Criar planilha Excel com múltiplas abas
-            excel_buffer = self._criar_excel([
-                ('Projetos', df_projetos),
-                ('Desempenho', df_desempenho),
-                ('Uso do Sistema', df_uso)
-            ])
-            
-            # Criar corpo do e-mail
-            corpo_email = self._criar_corpo_email(nome_empresa, periodo, data_inicio, data_fim, graficos)
-            
-            # Enviar e-mail
-            self.enviador.enviar_email(
-                email_empresa,
-                f"Relatório {periodo.capitalize()} da Empresa {nome_empresa} - {data_inicio.strftime('%d/%m/%Y')} a {data_fim.strftime('%d/%m/%Y')}",
-                corpo_email,
-                excel_buffer,
-                graficos
-            )
+            except Exception as e:
+                print(f"Erro ao gerar ou enviar relatório para a empresa {nome_empresa}: {str(e)}")
 
     def _criar_visualizacoes(self, df_projetos, df_desempenho, df_uso):
         graficos = []
