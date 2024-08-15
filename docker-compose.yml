@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   apache:
@@ -10,6 +11,10 @@ services:
       - "80:80"
     networks:
       - webnet
+    volumes:
+      - ./html:/var/www/html
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.0
@@ -19,11 +24,12 @@ services:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: projeto
       MYSQL_USER: root
-      MYSQL_PASSWORD: 
+      MYSQL_PASSWORD: root_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./Projeto-Integrador:/docker-entrypoint-initdb.d
     networks:
       - webnet
 
