@@ -6,7 +6,7 @@ $tabela = $_SESSION['tipo_usuario'];
 $id_usuario = $_SESSION['id_' . $tabela];
 
 // Database connection
-$pdo = new PDO("mysql:host=localhost;dbname=projeto", "root", "");
+$pdo = new PDO("mysql:host=mysql;dbname=projeto", "jfhk", "jfhk123");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Fetch user-specific data
