@@ -184,7 +184,6 @@ $userData['imagem'] = empty($userData['imagem']) || !str_starts_with($userData['
             </a>
 
         <?php } ?>
-        <a href="dynamic-full-calendar.php">
             <i class="fas fa-calendar-alt me-1"></i>Calendário
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">

@@ -42,6 +42,10 @@ try {
                 ':status' => $_POST['status'],
                 ':banner_path' => $banner_path
             ]);
+
+            // Redirecionar após a criação do projeto para evitar reenvio do formulário
+            header('Location: projeto.php');
+            exit;
         }
 
         // Editar projeto (apenas para empresas)
@@ -63,6 +67,11 @@ try {
                 ':id_projeto' => $_POST['id_projeto'],
                 ':id_empresa' => $id_empresa
             ]);
+
+
+            // Redirecionar após a criação do projeto para evitar reenvio do formulário
+            header('Location: projeto.php');
+            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_project'])) {
@@ -96,6 +105,10 @@ try {
             } catch (PDOException $e) {
                 $pdo->rollBack();
                 die("Erro ao deletar projeto: " . $e->getMessage());
+            }
+            finally {
+                header('Location: projeto.php');
+                exit;
             }
         }
 
@@ -224,7 +237,6 @@ try {
             <i class="fas fa-users me-1"></i>Notificações
         </a>
     <?php } ?>
-    <a href="dynamic-full-calendar.php">
         <i class="fas fa-calendar-alt me-1"></i>Calendário
     </a>
     <a href="sair.php" class="btn btn-danger mt-auto">
