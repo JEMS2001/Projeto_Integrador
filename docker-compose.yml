@@ -12,7 +12,7 @@ services:
     networks:
       - webnet
     volumes:
-      - ./html:/var/www/html
+      #- ./html:/var/www/html
     depends_on:
       - mysql
 
