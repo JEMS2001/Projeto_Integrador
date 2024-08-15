@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   apache:
@@ -10,6 +11,8 @@ services:
       - "80:80"
     networks:
       - webnet
+    volumes:
+      - ./html:/var/www/html
 
   mysql:
     image: mysql:8.0
@@ -24,6 +27,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./Projeto-Integrador:/docker-entrypoint-initdb.d
     networks:
       - webnet
 
