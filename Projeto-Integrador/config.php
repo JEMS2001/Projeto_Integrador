@@ -1,8 +1,8 @@
 <?php
 // Dados de conexão com o banco de dados
 $servername = "mysql";  // Nome do servidor MySQL (geralmente 'localhost')
-$username = "root";  // Nome de usuário do MySQL
-$password = "root_password";    // Senha do MySQL
+$username = "jfhk";  // Nome de usuário do MySQL
+$password = "jfhk123";    // Senha do MySQL
 $dbname = "projeto";  // Nome do banco de dados que você criou
 
 // Cria a conexão
