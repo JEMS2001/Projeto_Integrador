@@ -52,6 +52,20 @@ if(isset($_SESSION['email'])) {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Estilo específico para dispositivos móveis */
+@media (max-width: 768px) {
+    h1.text-center.mb-5 {
+        margin-top: 80px; /* Ajusta o espaço superior do título */
+    }
+}
+
+/* Estilo específico para dispositivos maiores */
+@media (min-width: 769px) {
+    h1.text-center.mb-5 {
+        margin-top: 100px; /* Ajuste o espaço superior para evitar cobertura pelo cabeçalho */
+    }
+}
 </style>
 
 <div class="container my-5">
