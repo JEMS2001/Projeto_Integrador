@@ -1,0 +1,55 @@
+
+services:
+  apache:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apache
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: projeto
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - webnet
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "8080:80"
+    networks:
+      - webnet
+
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: python
+    restart: unless-stopped
+    networks:
+      - webnet
+
+networks:
+  webnet:
+
+volumes:
+  mysql_data:

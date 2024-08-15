@@ -1,0 +1,11 @@
+# Usar a imagem oficial do Python 3.11
+FROM python:3.11-slim
+
+# Instalar as bibliotecas necessárias
+RUN pip install pandas SQLAlchemy PyMySQL matplotlib seaborn openpyxl Jinja2 python-dateutil numpy Pillow
+
+# Copiar scripts (se houver)
+COPY ./Automacao /scripts
+
+# Definir o diretório de trabalho
+WORKDIR /scripts
