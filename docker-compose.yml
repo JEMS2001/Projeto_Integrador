@@ -23,13 +23,14 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: projeto
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root_password
+      MYSQL_USER: jfhk
+      MYSQL_PASSWORD: jfhk123
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./Projeto-Integrador:/docker-entrypoint-initdb.d
+      #- ./Projeto-Integrador:/docker-entrypoint-initdb.d
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - webnet
 
