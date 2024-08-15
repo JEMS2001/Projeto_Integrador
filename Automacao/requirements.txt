@@ -1,31 +1,31 @@
 # Banco de dados e manipulação de dados
-pandas==1.3.5
-SQLAlchemy==1.4.39
-PyMySQL==1.0.2
+pandas
+SQLAlchemy
+PyMySQL2
 
 # Visualização de dados
-matplotlib==3.5.2
-seaborn==0.11.2
+matplotlib
+seaborn
 
 # Manipulação de arquivos Excel
-openpyxl==3.0.10
+openpyxl
 
 # Envio de e-mails
 smtplib  # (parte da biblioteca padrão Python)
 
 # Geração de relatórios
-Jinja2==3.1.2  # Para templates de e-mail HTML
+Jinja2  # Para templates de e-mail HTML
 
 # Logging
 logging  # (parte da biblioteca padrão Python)
 
 # Manipulação de datas
-python-dateutil==2.8.2
+python-dateutil
 
 # Bibliotecas de sistema
 sys  # (parte da biblioteca padrão Python)
 os  # (parte da biblioteca padrão Python)
 
 # Outras dependências que podem ser necessárias
-numpy==1.21.6  # Dependência do pandas e matplotlib
-Pillow==9.2.0  # Para suporte a imagens em matplotlib
+numpy # Dependência do pandas e matplotlib
+Pillow  # Para suporte a imagens em matplotlib
