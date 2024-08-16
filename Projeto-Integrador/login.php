@@ -1,7 +1,18 @@
 <?php
+// Inicie a sessão e inclua a configuração no topo do arquivo
 session_start();
-
 include 'config.php';
+
+// Função para redirecionar e encerrar o script
+function redirect($url) {
+    header("Location: $url");
+    exit();
+}
+
+// Função para exibir mensagens de erro ou sucesso
+function setMessage($type, $message) {
+    $_SESSION['message'] = ['type' => $type, 'text' => $message];
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
@@ -13,7 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else if ($tipo_usuario == "membro") {
         $table = "membro";
     } else {
-        die("Tipo de usuário inválido.");
+        setMessage('danger', "Tipo de usuário inválido.");
+        redirect("login.php");
     }
 
     try {
@@ -25,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (password_verify($senha, $row['senha'])) {
-                echo "<div class='alert alert-success'>Login realizado com sucesso!</div>";
+                setMessage('success', "Login realizado com sucesso!");
                 $_SESSION['email'] = $email;
                 $_SESSION['tipo_usuario'] = $tipo_usuario;
 
@@ -34,11 +46,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } else if ($tipo_usuario == "membro") {
                     $_SESSION['id_membro'] = $row['id_membro'];
                     
-                    // Verifica se o membro tem um id_empresa associado
                     if (!empty($row['id_empresa'])) {
                         $_SESSION['id_empresa'] = $row['id_empresa'];
                         
-                        // Inicia o monitoramento da sessão
                         $sql_sessao = "INSERT INTO sessao_usuario (id_membro, data_inicio) VALUES (:id_membro, NOW())";
                         $stmt_sessao = $pdo->prepare($sql_sessao);
                         $stmt_sessao->bindParam(':id_membro', $row['id_membro']);
@@ -46,7 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         
                         $_SESSION['id_sessao'] = $pdo->lastInsertId();
 
-                        // Atualiza o status de login do membro
                         $sql_update = "UPDATE membro SET esta_logado = TRUE, ultimo_login = NOW() WHERE id_membro = :id_membro";
                         $stmt_update = $pdo->prepare($sql_update);
                         $stmt_update->bindParam(':id_membro', $row['id_membro']);
@@ -54,26 +63,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                 }
 
-                header("Location: dashboard.php");
-                exit();
+                redirect("dashboard.php");
             } else {
-                echo "<div class='alert alert-danger'>Email ou senha incorretos.</div>";
-                unset($_SESSION['email']);
-                header("Location: login.php");
-                exit();
+                setMessage('danger', "Email ou senha incorretos.");
+                redirect("login.php");
             }
         } else {
-            echo "<div class='alert alert-danger'>Email ou senha incorretos.</div>";
-            unset($_SESSION['email']);
-            header("Location: login.php");
-            exit();
+            setMessage('danger', "Email ou senha incorretos.");
+            redirect("login.php");
         }
     } catch (PDOException $e) {
-        echo "Erro: " . $e->getMessage();
+        setMessage('danger', "Erro: " . $e->getMessage());
+        redirect("login.php");
     }
 }
+
+// Incluir o cabeçalho e o restante do HTML
+include 'layout/header.php';
 ?>
-<?php include 'layout/header.php'; ?>
+
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
