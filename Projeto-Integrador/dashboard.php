@@ -51,11 +51,7 @@ if ($tabela == 'empresa') {
     ")->fetchAll(PDO::FETCH_ASSOC);
 
 } else {
-    if ($tabela == 'membro') {
-        $user = $pdo->query("SELECT * FROM membro WHERE id_membro = $id_usuario")->fetch(PDO::FETCH_ASSOC);
-    } else {
-        $user = $pdo->query("SELECT m.*, e.nome as nome_empresa FROM membro m JOIN empresa e ON m.id_empresa = e.id_empresa WHERE m.id_membro = $id_usuario")->fetch(PDO::FETCH_ASSOC);
-    }
+    $user = $pdo->query("SELECT m.*, e.nome as nome_empresa FROM membro m JOIN empresa e ON m.id_empresa = e.id_empresa WHERE m.id_membro = $id_usuario")->fetch(PDO::FETCH_ASSOC);
     $projetos = $pdo->query("SELECT COUNT(*) FROM membro_projeto WHERE id_membro = $id_usuario")->fetchColumn();
     $tarefas = $pdo->query("SELECT COUNT(*) FROM tarefa WHERE id_membro = $id_usuario")->fetchColumn();
     $tarefas_pendentes = $pdo->query("SELECT COUNT(*) FROM tarefa WHERE id_membro = $id_usuario AND status != 'Concluída'")->fetchColumn();
@@ -194,7 +190,7 @@ if ($tabela == 'empresa') {
             </a>
 
         <?php } ?>
-        <a href="dynamic-full-calendar.html">
+        <a href="dynamic-full-calendar.php">
             <i class="fas fa-calendar-alt me-1"></i>Calendário
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">
@@ -307,8 +303,8 @@ if ($tabela == 'empresa') {
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Membro</h5>
-                        <p class="card-text"><?php echo $user['nome']; ?></p>
+                        <h5 class="card-title"><i class="fas fa-building"></i> Empresa</h5>
+                        <p class="card-text"><?php echo $user['nome_empresa']; ?></p>
                     </div>
                 </div>
             </div>
