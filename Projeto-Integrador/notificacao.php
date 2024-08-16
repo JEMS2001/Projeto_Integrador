@@ -136,7 +136,7 @@ try {
             </a>
 
         <?php } ?>
-        <a href="dynamic-full-calendar.html">
+        <a href="dynamic-full-calendar.php">
             <i class="fas fa-calendar-alt me-1"></i>Calendário
         </a>
         <a href="sair.php" class="btn btn-danger mt-auto">
