@@ -54,11 +54,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php include 'layout/header.php'; ?>
 
 <style>
+/* Estilos gerais */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1;
+}
+
+footer {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: auto; /* Alterar altura fixa para altura automática */
+    text-align: center;
+}
+
+/* Esconde a imagem do início em telas maiores */
+.login-background-mobile {
+    display: none;
+}
+
+.login-background {
+    margin-bottom: 100px; /* Ajuste o valor conforme necessário */
+}
+
 .registration-container {
     display: flex;
     height: 100vh;
     align-items: center; /* Centraliza verticalmente */
-    margin: 20px;
+    margin: 50px;
 }
 
 .registration-form {
@@ -149,8 +177,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 /* Adiciona um espaço em branco antes do footer */
 .spacer {
-    height: 50px; /* Ajuste a altura conforme necessário */
+    height: 150px; /* Ajuste a altura conforme necessário */
 }
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+    .registration-container {
+        flex-direction: column;
+        height: auto; /* Permite que a altura se ajuste ao conteúdo */
+        margin: 20px; /* Reduz a margem em telas pequenas */
+    }
+
+    .registration-form {
+        width: 90%;
+        max-width: 500px; /* Limita a largura máxima */
+        padding: 20px;
+        margin: 0 auto; /* Centraliza o formulário */
+    }
+
+    .login-background {
+        width: 100%;
+        display: block; /* Muda o layout para bloco */
+        margin-bottom: 20px; /* Adiciona espaço abaixo da imagem */
+    }
+
+    .login-background img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+    .img-fluid {
+        margin-top: 50px;
+    }
+
+
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">

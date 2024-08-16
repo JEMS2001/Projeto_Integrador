@@ -48,117 +48,170 @@ $userData['imagem'] = empty($userData['imagem']) || !str_starts_with($userData['
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="estilo.css">
     <style>
-        
-        .form-group.error input {
-            border-color: #dc3545;
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875em;
-            margin-top: 0.25rem;
-        }
-        .sidebar {
-            background-color: var(--secondary-color);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            padding-top: 20px;
-            z-index: 1000;
-        }
+ /* Estilos existentes */
+.form-group.error input {
+    border-color: #dc3545;
+}
 
-        .sidebar a {
-            color: #fff;
-            text-decoration: none;
-            padding: 15px;
-            display: block;
-            transition: 0.3s;
-        }
+.error-message {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
 
-        .sidebar a:hover {
-            background: var(--secondary-color);
-        }
-        .user-profile-wrapper {
-            margin-left: 250px;
-            transition: all 0.3s;
-        }
-        .profile-header {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            padding: 2rem;
-            display: flex;
-            align-items: center;
-        }
-        .profile-image img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--accent-color);
-            margin-right: 2rem;
-        }
-        .profile-nav {
-            background-color: var(--secondary-color);
-            padding: 1rem;
-        }
-        .profile-nav a {
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-        .profile-nav a:hover {
-            background-color: var(--accent-color);
-        }
-        .profile-content {
-            padding: 2rem;
-        }
-        .profile-section {
-            background-color: #fff;
-            padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        .profile-section h2 {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .btn-danger-custom {
-            background-color: #dc3545;
-            color: white;
-            transition: background-color 0.3s;
-        }
-        .btn-danger-custom:hover {
-            background-color: #c82333;
-        }
-        .btn-danger-custom:disabled {
-            background-color: #6c757d;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                left: -250px;
-            }
-            .user-profile-wrapper {
-                margin-left: 0;
-            }
-            .profile-header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .profile-image {
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-        }
+.sidebar {
+    background-color: var(--secondary-color);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    padding-top: 20px;
+    z-index: 1000;
+    transition: transform 0.3s ease; /* Transição para a animação da sidebar */
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+    padding: 15px;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background: var(--secondary-color);
+}
+
+.user-profile-wrapper {
+    margin-left: 250px;
+    transition: all 0.3s;
+}
+
+.profile-header {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.profile-image img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--accent-color);
+    margin-right: 2rem;
+}
+
+.profile-nav {
+    background-color: var(--secondary-color);
+    padding: 1rem;
+}
+
+.profile-nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.profile-nav a:hover {
+    background-color: var(--accent-color);
+}
+
+.profile-content {
+    padding: 2rem;
+}
+
+.profile-section {
+    background-color: #fff;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.profile-section h2 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-danger-custom {
+    background-color: #dc3545;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.btn-danger-custom:hover {
+    background-color: #c82333;
+}
+
+.btn-danger-custom:disabled {
+    background-color: #6c757d;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%); /* Esconde a sidebar fora da tela */
+    }
+
+    .sidebar.show {
+        transform: translateX(0); /* Exibe a sidebar */
+    }
+
+    .user-profile-wrapper {
+        margin-left: 0; /* Remove a margem quando a sidebar é escondida */
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-image {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    /* Adiciona um botão para exibir a sidebar em dispositivos móveis */
+    .menu-btn {
+        display: block;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        border: none;
+        padding: 10px 15px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1100; /* Certifique-se de que o botão está acima da sidebar */
+    }
+
+    .menu-btn:focus {
+        outline: none;
+    }
+}
+
+/* Oculta o botão de menu em dispositivos com largura mínima de 769px */
+@media (min-width: 769px) {
+    .menu-btn {
+        display: none;
+    }
+}
+
     </style>
 </head>
 <body>    
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
         <div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
             <i class="fas fa-code me-2"></i>JFHK
@@ -584,6 +637,11 @@ $userData['imagem'] = empty($userData['imagem']) || !str_starts_with($userData['
         });
     </script>
 
-    
+    <script>
+        function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('show');
+}
+
+    </script>
 </body>
 </html>

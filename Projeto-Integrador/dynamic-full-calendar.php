@@ -116,27 +116,112 @@ $members = getMembers($pdo, $id_empresa);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="estilo.css">
     <style>
-        .sidebar {
-            background-color: var(--secondary-color);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            padding-top: 20px;
-            z-index: 1000;
-        }
+.sidebar {
+    background-color: var(--primary-color);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px; /* Largura da sidebar */
+    padding-top: 20px;
+    transform: translateX(0); /* Sempre visível em desktop */
+    transition: transform 0.3s ease; /* Adiciona transição para efeitos visuais */
+    z-index: 1000;
+}
 
-        .header-title {
-            font-size: 2rem;
-            color: var(--secondary-color);
-            text-align: center; 
-            margin-top: 50px; 
-        }
+/* Estilo para o conteúdo */
+.container {
+    margin-left: 250px; /* Margem para compensar a largura da sidebar */
+    padding: 20px;
+    max-width: calc(100% - 250px); /* Largura máxima para o conteúdo */
+}
+
+/* Estilo para o botão que aparece em dispositivos móveis */
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1100;
+}
+
+/* Mostrar botão e esconder a sidebar em dispositivos móveis */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-250px); /* Sidebar escondida por padrão */
+    }
+
+    .sidebar.active {
+        transform: translateX(0); /* Sidebar visível quando ativa */
+    }
+
+    .sidebar-toggle {
+        display: block; /* Mostrar botão */
+    }
+
+    .container {
+        margin-left: 0; /* Sem margem extra */
+        max-width: 100%; /* Largura total do container */
+        margin-top: 40px;
+    }
+}
+
+/* Estilo para o botão de hambúrguer */
+.sidebar-toggle {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+/* Estilo para o calendário */
+#calendar {
+    width: 100%; /* Largura total do calendário */
+    max-width: 800px; /* Limite de largura do calendário */
+    margin: 0 auto; /* Centraliza o calendário horizontalmente */
+}
+
+/* Estilos para os botões */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
 
     </style>
 </head>
 <body>
+
+    <!-- Botão para mostrar/ocultar a sidebar -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
 <div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
@@ -430,5 +515,11 @@ function delete_event() {
     return false;
 }
 </script>
+        <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+        </script>
 </body>
 </html>

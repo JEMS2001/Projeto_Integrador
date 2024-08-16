@@ -12,6 +12,40 @@ if(isset($_SESSION['email'])) {
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
+<style>
+    body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1;
+}
+footer {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: auto; /* Alterar altura fixa para altura automática */
+    text-align: center;
+}
+* {
+    box-sizing: border-box;
+}
+
+footer {
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+
+    @media (max-width: 768px) {
+    footer {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
 
 <section id="hero" class="hero">
     <div class="container">

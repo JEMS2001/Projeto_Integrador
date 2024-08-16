@@ -58,103 +58,185 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php include 'layout/header.php'; ?>
 
 <style>
-    /* Ajustes para espaçamento */
-    .text-center {
-        margin-top: 20px; 
-    }
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
-    .navbar {
-        margin-bottom: 30px; 
-        padding-bottom: 20px; 
-    }
+main {
+    flex-grow: 1;
+}
 
+footer {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 1.5rem 0;
+    height: auto; /* Alterar altura fixa para altura automática */
+    text-align: center;
+}
+
+/* Esconde a imagem do início em telas maiores */
+.login-background-mobile {
+    display: none;
+}
+
+.login-background {
+    margin-bottom: 100px; /* Ajuste o valor conforme necessário */
+}
+
+/* Ajustes para espaçamento */
+.text-center {
+    margin-top: 20px; 
+}
+
+.navbar {
+    margin-bottom: 30px; 
+    padding-bottom: 20px; 
+}
+
+.registration-container {
+    display: flex;
+    height: auto; /* Permite que o container cresça com o conteúdo */
+    align-items: center;
+    margin-bottom: 100px; /* Espaço reduzido antes do footer */
+}
+
+.registration-form {
+    width: 50%;
+    padding: 80px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-background {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+}
+
+.login-background img {
+    max-width: 100%;
+    height: auto;
+}
+
+.registration-form h1 {
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.registration-form input[type="text"], 
+.registration-form input[type="email"], 
+.registration-form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.registration-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
+}
+
+.registration-form button:hover {
+    background-color: #e89419;
+}
+
+.registration-form .form-group {
+    margin-bottom: 15px;
+}
+
+.registration-form label {
+    display: block;
+    margin-bottom: 5px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.password-hint {
+    font-size: 0.9em;
+    color: #888;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
     .registration-container {
-        display: flex;
-        height: auto; /* Permite que o container cresça com o conteúdo */
+        flex-direction: column;
         align-items: center;
-        margin-bottom: 100px; /* Espaço reduzido antes do footer */
+        margin-bottom: 50px; /* Ajuste o valor conforme necessário */
     }
 
     .registration-form {
-        width: 50%;
-        padding: 40px;
-        background: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        width: 90%;
+        max-width: 100%;
+        padding: 20px;
+        margin: 0 auto; /* Centraliza o formulário */
     }
 
     .login-background {
-        width: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: white;
+        width: 100%;
+        margin-bottom: 20px; /* Espaço abaixo da imagem */
     }
 
     .login-background img {
         max-width: 100%;
         height: auto;
     }
+}
+
+@media (max-width: 480px) {
+    .registration-form {
+        padding: 15px;
+    }
 
     .registration-form h1 {
-        margin-bottom: 20px;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: opacity 0.5s, transform 0.5s;
+        font-size: 1.5rem; /* Ajusta o tamanho do título */
     }
 
     .registration-form input[type="text"], 
     .registration-form input[type="email"], 
     .registration-form input[type="password"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        opacity: 0;
-        transform: translateX(-20px);
-        transition: opacity 0.5s, transform 0.5s;
+        padding: 8px;
     }
 
     .registration-form button {
-        width: 100%;
-        padding: 10px;
-        background-color: var(--accent-color);
-        color: var(--primary-color);
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.5s, transform 0.5s, background-color 0.3s;
-    }
-
-    .registration-form button:hover {
-        background-color: #e89419;
-    }
-
-    .registration-form .form-group {
-        margin-bottom: 15px;
-    }
-
-    .registration-form label {
-        display: block;
-        margin-bottom: 5px;
-        opacity: 0;
-        transform: translateX(-20px);
-        transition: opacity 0.5s, transform 0.5s;
+        padding: 8px;
     }
 
     .password-hint {
-        font-size: 0.9em;
-        color: #888;
-        margin-top: -10px;
-        margin-bottom: 15px;
-        opacity: 0;
-        transform: translateX(-20px);
-        transition: opacity 0.5s, transform 0.5s;
+        font-size: 0.8em; /* Ajusta o tamanho da fonte */
     }
+
+    .img-fluid{
+        margin-top:30px;
+    }
+}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 

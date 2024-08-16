@@ -159,42 +159,63 @@ $members = getMembers($pdo, $id_empresa);
             display: none;
         }
         @media (max-width: 768px) {
-            .sidebar {
-                left: -250px;
-            }
-            .sidebar.active {
-                left: 0;
-            }
-            .content {
-                margin-left: 0;
-            }
-            .content.active {
-                margin-left: 250px;
-            }
-            #sidebar-toggle {
-                display: block;
-            }
-        }
-        .member-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .member-image {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 10px;
-        }
-        .fa-user-circle {
-            font-size: 40px;
-            color: #ccc;
-            margin-right: 10px;
-        }
+    .sidebar {
+        width: 100%;
+        height: 100vh; /* Mantém a altura total da tela */
+        transform: translateX(-100%); /* Esconde a sidebar fora da tela */
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+
+    .sidebar.show {
+        transform: translateX(0); /* Exibe a sidebar */
+    }
+
+    .content {
+        margin-left: 0; /* Remove a margem quando a sidebar é escondida */
+    }
+
+    .banner {
+        height: 120px; /* Ajusta a altura da banner em dispositivos móveis */
+    }
+
+    /* Adiciona um botão para exibir a sidebar em dispositivos móveis */
+    .menu-btn {
+        display: block;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        border: none;
+        padding: 10px 15px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1100; /* Certifique-se de que o botão está acima da sidebar */
+    }
+
+    .menu-btn:focus {
+        outline: none;
+    }
+
+    .content{
+        margin-top: 20px;
+    }
+}
+
+/* Adiciona um botão para exibir a sidebar em dispositivos móveis */
+@media (min-width: 769px) {
+    .menu-btn {
+        display: none;
+    }
+}
+
     </style>
 </head>
 <body>
-
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
 <div class="sidebar">
         <a class="navbar-brand d-flex align-items-center justify-content-center" href="home.php">
             <i class="fas fa-code me-2"></i>JFHK
@@ -308,7 +329,11 @@ $members = getMembers($pdo, $id_empresa);
         $('#cpf_membro').mask('000.000.000-00');
     });
 </script>
-
+<script>
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('show');
+}
+</script>
 </body>
 </html>
 
