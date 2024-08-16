@@ -237,6 +237,7 @@ try {
             <i class="fas fa-users me-1"></i>Notificações
         </a>
     <?php } ?>
+    <a href="dynamic-full-calendar.html">
         <i class="fas fa-calendar-alt me-1"></i>Calendário
     </a>
     <a href="sair.php" class="btn btn-danger mt-auto">
