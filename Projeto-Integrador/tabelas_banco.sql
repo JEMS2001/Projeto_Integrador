@@ -110,4 +110,6 @@ CREATE TABLE notificacao(
 );
 
 
+ALTER TABLE calendar_event_master MODIFY COLUMN event_id INT AUTO_INCREMENT PRIMARY KEY;
+
 
