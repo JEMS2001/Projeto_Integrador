@@ -28,4 +28,4 @@ os  # (parte da biblioteca padrão Python)
 
 # Outras dependências que podem ser necessárias
 numpy==1.21.6  # Dependência do pandas e matplotlib
-Pillow==9.2.0  # Para suporte a imagens em matplotlib
+Pillow==10.3.0  # Para suporte a imagens em matplotlib
