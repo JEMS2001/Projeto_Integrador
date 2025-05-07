@@ -14,7 +14,7 @@ openpyxl==3.0.10
 smtplib  # (parte da biblioteca padrão Python)
 
 # Geração de relatórios
-Jinja2==3.1.2  # Para templates de e-mail HTML
+Jinja2==3.1.6  # Para templates de e-mail HTML
 
 # Logging
 logging  # (parte da biblioteca padrão Python)
