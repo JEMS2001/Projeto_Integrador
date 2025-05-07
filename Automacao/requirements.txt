@@ -27,5 +27,5 @@ sys  # (parte da biblioteca padrão Python)
 os  # (parte da biblioteca padrão Python)
 
 # Outras dependências que podem ser necessárias
-numpy==1.21.6  # Dependência do pandas e matplotlib
+numpy==1.22.0  # Dependência do pandas e matplotlib
 Pillow==10.3.0  # Para suporte a imagens em matplotlib
