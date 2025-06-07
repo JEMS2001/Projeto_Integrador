@@ -17,6 +17,12 @@ use Laravel\Passport\PersonalAccessTokenResult;
 
 class AuthService
 {
+    protected TokenService $tokenService;
+
+    public function __construct(TokenService $tokenService)
+    {
+        $this->tokenService = $tokenService;
+    }
     /**
      * Register a new company
      */
@@ -64,6 +70,22 @@ class AuthService
 
         // Create OAuth2 token with Passport
         $tokenResult = $this->createTokenForUser($user, $dto->tipoUsuario, $dto->rememberMe);
+
+        // Store session information
+        $this->tokenService->storeUserSession($user, $tokenResult->token->id, [
+            'remember_me' => $dto->rememberMe,
+            'login_method' => 'email_password',
+        ]);
+
+        // Cache token information
+        $tokenData = [
+            'id' => $tokenResult->token->id,
+            'user_id' => $user->id,
+            'scopes' => $tokenResult->token->scopes,
+            'expires_at' => $tokenResult->token->expires_at->toISOString(),
+            'revoked' => false,
+        ];
+        $this->tokenService->cacheTokenInfo($tokenResult->token->id, $tokenData);
 
         // Update last login timestamp
         $user->touch();
@@ -115,7 +137,7 @@ class AuthService
         }
 
         return $token;
-    }/**
+    }    /**
      * Logout user and revoke current token
      */
     public function logout($user): array
@@ -124,8 +146,17 @@ class AuthService
             throw new AuthenticationException('User not authenticated');
         }
 
+        $token = $user->token();
+        $userType = $user instanceof Empresa ? 'empresa' : 'membro';
+
         // Revoke current token for Passport
         $user->token()->revoke();
+
+        // Clean up session and cache
+        if ($token) {
+            $this->tokenService->invalidateTokenCache($token->id);
+        }
+        $this->tokenService->clearUserSession($user->id, $userType);
 
         return [
             'message' => 'Logout realizado com sucesso!',
@@ -142,15 +173,50 @@ class AuthService
             throw new AuthenticationException('User not authenticated');
         }
 
+        $userType = $user instanceof Empresa ? 'empresa' : 'membro';
+
         // Count tokens before revoking
         $tokenCount = $user->tokens()->count();
 
+        // Get all tokens for cache cleanup
+        $tokens = $user->tokens()->get();
+        foreach ($tokens as $token) {
+            $this->tokenService->invalidateTokenCache($token->id);
+        }
+
         // Revoke all tokens for Passport
         $user->tokens()->delete();
+
+        // Clear session data
+        $this->tokenService->clearUserSession($user->id, $userType);
 
         return [
             'message' => 'Logout de todos os dispositivos realizado com sucesso!',
             'revoked_tokens' => $tokenCount,
         ];
+    }
+
+    /**
+     * Get active sessions for user
+     */
+    public function getActiveSessions($user): array
+    {
+        if (!$user) {
+            throw new AuthenticationException('User not authenticated');
+        }
+
+        return $this->tokenService->getActiveSessions($user);
+    }
+
+    /**
+     * Revoke specific session
+     */
+    public function revokeSession($user, string $tokenId): bool
+    {
+        if (!$user) {
+            throw new AuthenticationException('User not authenticated');
+        }
+
+        return $this->tokenService->revokeSession($user, $tokenId);
     }
 }

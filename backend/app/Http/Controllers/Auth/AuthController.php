@@ -13,12 +13,14 @@ use App\Http\Requests\Auth\RegisterEmpresaRequest;
 use App\Http\Requests\Auth\RegisterMembroRequest;
 use App\Http\Resources\Auth\AuthResource;
 use App\Http\Resources\Auth\LogoutResource;
+use App\Http\Resources\Auth\SessionResource;
 use App\Http\Resources\Auth\UserResource;
 use App\Http\Resources\EmpresaResource;
 use App\Http\Resources\MembroResource;
 use App\Models\Empresa;
 use App\Models\Membro;
 use App\Services\Auth\AuthService;
+use App\Services\Auth\TokenService;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +31,8 @@ use Illuminate\Support\Facades\Log;
 class AuthController extends Controller
 {
     public function __construct(
-        private readonly AuthService $authService
+        private readonly AuthService $authService,
+        private readonly TokenService $tokenService
     ) {}
 
     /**
@@ -209,10 +212,97 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => new LogoutResource($logoutData)
+            ]);        } catch (Exception $e) {
+            Log::error('Erro no logout de todos os dispositivos: ' . $e->getMessage());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erro interno do servidor.',
+                'errors' => config('app.debug') ? [$e->getMessage()] : []
+            ], 500);
+        }
+    }
+
+    /**
+     * Get active sessions for the authenticated user
+     */
+    public function getActiveSessions(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Usuário não autenticado.'
+                ], 401);
+            }
+
+            $sessions = $this->tokenService->getActiveSessions($user);
+            $currentTokenId = $request->attributes->get('current_token_id');
+
+            // Mark current session
+            foreach ($sessions as &$session) {
+                if ($session['id'] === $currentTokenId) {
+                    $session['is_current'] = true;
+                    break;
+                }
+            }            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'sessions' => SessionResource::collection($sessions),
+                    'stats' => $this->tokenService->getTokenStats($user),
+                ]
             ]);
 
         } catch (Exception $e) {
-            Log::error('Erro no logout de todos os dispositivos: ' . $e->getMessage());
+            Log::error('Erro ao obter sessões ativas: ' . $e->getMessage());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erro interno do servidor.',
+                'errors' => config('app.debug') ? [$e->getMessage()] : []
+            ], 500);
+        }
+    }    /**
+     * Revoke specific session
+     */
+    public function revokeSession(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $tokenId = $request->input('token_id');
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Usuário não autenticado.'
+                ], 401);
+            }
+
+            if (!$tokenId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Token ID é obrigatório.'
+                ], 400);
+            }
+
+            $revoked = $this->tokenService->revokeToken($tokenId, $user);
+
+            if ($revoked) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Sessão revogada com sucesso!'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sessão não encontrada ou já revogada.'
+                ], 404);
+            }
+
+        } catch (Exception $e) {
+            Log::error('Erro ao revogar sessão: ' . $e->getMessage());
             
             return response()->json([
                 'status' => 'error',
