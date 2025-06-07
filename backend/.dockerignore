@@ -1,0 +1,84 @@
+# Vendor directory
+vendor/
+
+# Node modules (if any)
+node_modules/
+
+# Composer files (will be regenerated)
+composer.lock
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build outputs
+build/
+dist/
+
+# Storage directories (contains user uploads and logs)
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/app/public/
+
+# Cache directories
+bootstrap/cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+README*
+docs/
+
+# Test files
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Database files
+database/database.sqlite
+*.sqlite
+*.db
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+tmp/
+temp/
+
+# Package manager files
+package-lock.json
+yarn.lock
+
+# Laravel specific
+public/hot
+public/storage
+public/mix-manifest.json
+
+# Vite build assets
+public/build/

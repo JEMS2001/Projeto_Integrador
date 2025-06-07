@@ -392,7 +392,7 @@ class UserPolicy
     }
 }
 
-// API Authentication with Sanctum
+// API Authentication with Laravel Passport (OAuth2)
 class LoginController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse
@@ -404,11 +404,14 @@ class LoginController extends Controller
         }
 
         $user = Auth::user();
-        $token = $user->createToken('api-token')->plainTextToken;
+        $tokenResult = $user->createToken('api-token');
+        $token = $tokenResult->accessToken;
 
         return $this->successResponse([
             'user' => UserResource::make($user),
-            'token' => $token,
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'expires_at' => $tokenResult->token->expires_at,
         ]);
     }
 }
@@ -444,7 +447,7 @@ RateLimiter::for('api', function (Request $request) {
 });
 
 // Apply to routes
-Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     Route::apiResource('users', UserController::class);
 });
 ```
@@ -786,7 +789,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {

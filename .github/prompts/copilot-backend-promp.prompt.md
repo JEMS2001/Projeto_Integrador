@@ -39,7 +39,7 @@ name: 'Copilot Backend Prompt'
 - **Performance**: Documentar complexidade > O(n log n)
 
 5. **Security & Authentication**
-- **Sanctum**: Para API authentication
+- **Laravel Passport**: Para OAuth2 API authentication
 - **Policies**: Authorization logic fora dos controllers
 - **Input Sanitization**: strip_tags(), HTMLPurifier para conteúdo
 - **Rate Limiting**: Throttling para endpoints críticos

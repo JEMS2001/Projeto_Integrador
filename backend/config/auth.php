@@ -31,7 +31,7 @@ return [
     | users are actually retrieved out of your database or other storage
     | system used by the application. Typically, Eloquent is utilized.
     |
-    | Supported: "session"
+    | Supported: "session", "passport"
     |
     */
 
@@ -39,6 +39,21 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+        
+        'api' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+        ],
+        
+        'empresa' => [
+            'driver' => 'passport',
+            'provider' => 'empresas',
+        ],
+        
+        'membro' => [
+            'driver' => 'passport',
+            'provider' => 'membros',
         ],
     ],
 
@@ -63,6 +78,16 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        
+        'empresas' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Empresa::class,
+        ],
+        
+        'membros' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Membro::class,
         ],
 
         // 'users' => [

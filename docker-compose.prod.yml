@@ -1,0 +1,9 @@
+# Production override configuration
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    volumes: []  # Remove volumes for production

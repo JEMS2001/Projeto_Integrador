@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "js-cookie": "^3.0.5",
     "task-master-ai": "^0.16.1"
   }
 }
