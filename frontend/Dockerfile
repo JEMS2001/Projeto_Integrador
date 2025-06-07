@@ -1,17 +1,13 @@
-FROM node:20
+# Use the official Bun image with latest Node.js
+FROM oven/bun:latest
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and yarn.lock (or package-lock.json)
-COPY package.json yarn.lock ./
-# Or if you use package-lock.json
-# COPY package.json package-lock.json ./
+# Copy package files
+COPY package.json bun.lockb* ./
 
-# Install dependencies
-RUN yarn install
-# Or if you use npm
-# RUN npm install
+# Install dependencies using Bun
+RUN bun install
 
 # Copy the rest of the application code
 COPY . .
@@ -19,7 +15,5 @@ COPY . .
 # Expose port 3000
 EXPOSE 3000
 
-# Start the application
-CMD ["yarn", "dev"]
-# Or if you use npm
-# CMD ["npm", "run", "dev"]
+# Start the development server
+CMD ["bun", "run", "dev"]
