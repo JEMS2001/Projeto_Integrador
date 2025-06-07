@@ -55,6 +55,63 @@ services:
     networks:
       - webnet
 
+  # Backend Service (Laravel with PHP-FPM)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        user: sail
+        uid: 1000
+    image: sail-8.2/app # You can customize this image name
+    container_name: backend_app
+    restart: unless-stopped
+    ports:
+      - "8000:9000" # Exposing PHP-FPM on port 9000, mapped to host 8000
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - webnet
+    depends_on:
+      - mysql
+      # - redis # Uncomment if you plan to use Redis
+      # - mailhog # Uncomment if you plan to use MailHog
+
+  # Nginx Service (to serve Laravel backend)
+  nginx:
+    image: nginx:alpine
+    container_name: backend_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80" # Nginx listening on port 80
+    volumes:
+      - ./backend:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf # Nginx configuration
+    networks:
+      - webnet
+    depends_on:
+      - backend
+
+  # Frontend Service (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Avoids overriding node_modules from host
+      - /app/.next # Avoids overriding .next from host
+    networks:
+      - webnet
+    environment:
+      - NODE_ENV=development
+      # Add any other environment variables Next.js needs
+      # e.g., NEXT_PUBLIC_API_URL=http://localhost/api (if Nginx proxies /api to backend)
+
 networks:
   webnet:
 
