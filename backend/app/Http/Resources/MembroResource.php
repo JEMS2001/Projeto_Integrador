@@ -18,7 +18,7 @@ class MembroResource extends JsonResource
             'nome' => $this->nome,
             'email' => $this->email,
             'cpf' => $this->getCpfFormatted(),
-            'dataNascimento' => $this->data_nascimento?->format('d/m/Y'),
+            'dataNascimento' => $this->getFormattedDataNascimento(),
             'telefone' => $this->telefone,
             'empresa' => $this->whenLoaded('empresa', function () {
                 return [
@@ -49,8 +49,34 @@ class MembroResource extends JsonResource
                    substr($cpfNumbers, 3, 3) . '.' . 
                    substr($cpfNumbers, 6, 3) . '-' . 
                    substr($cpfNumbers, 9, 2);
-        }
-        
+        }        
         return $this->cpf;
+    }
+
+    /**
+     * Get formatted data nascimento handling both string and Carbon date
+     */
+    private function getFormattedDataNascimento(): ?string
+    {
+        if (!$this->data_nascimento) {
+            return null;
+        }
+
+        // If it's already a Carbon instance, format it
+        if ($this->data_nascimento instanceof \Carbon\Carbon) {
+            return $this->data_nascimento->format('d/m/Y');
+        }
+
+        // If it's a string, try to parse and format it
+        if (is_string($this->data_nascimento)) {
+            try {
+                return \Carbon\Carbon::parse($this->data_nascimento)->format('d/m/Y');
+            } catch (\Exception $e) {
+                // If parsing fails, return the original string
+                return $this->data_nascimento;
+            }
+        }
+
+        return null;
     }
 }

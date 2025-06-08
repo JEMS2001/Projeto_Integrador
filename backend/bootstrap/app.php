@@ -17,13 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkforanyScope' => \App\Http\Middleware\CheckForAnyScope::class,
             'oauth2session' => \App\Http\Middleware\ManageOAuth2Session::class,
             'sessionmgmt' => \App\Http\Middleware\SessionManagement::class,
+            'passportcookies' => \App\Http\Middleware\PassportCookieManagement::class,
         ]);
         
-        // Add OAuth2 session middleware to API routes
-        $middleware->api(append: [
-            \App\Http\Middleware\ManageOAuth2Session::class,
-            \App\Http\Middleware\SessionManagement::class,
-        ]);
+        // Add OAuth2 session middleware to API routes - temporarily disabled for setup
+        // $middleware->api(append: [
+        //     \App\Http\Middleware\ManageOAuth2Session::class,
+        //     \App\Http\Middleware\SessionManagement::class,
+        //     \App\Http\Middleware\PassportCookieManagement::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
